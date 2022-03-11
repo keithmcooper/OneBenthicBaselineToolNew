@@ -1,0 +1,484 @@
+---
+title: "OneBenthic Baseline Tool"
+author: ''
+output:
+  flexdashboard::flex_dashboard:
+    theme: cerulean
+    css: style.css
+    #social: menu
+    #source_code: embed
+runtime: shiny
+resource_files:
+- config.yml
+---
+
+```{r setup, include = FALSE}
+library(flexdashboard)
+library(shiny)
+library(jsonlite)
+library(maptools)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(purrr)
+library(leaflet)
+library(DT)
+library(mapview)
+library(leaflet)
+library(leafem)
+library(leaflet.extras)
+library(htmltools)
+library(mapview)
+library(plotly)
+library(pool)
+library(sf)
+library (RPostgres)
+library(DBI)
+library(geojsonio)
+library(RPostgreSQL)
+library(raster)
+library(pals)
+library(RColorBrewer)
+library(knitr)
+library(rmarkdown)
+require(ggplot2)
+require(data.table)
+require(raster)
+require(ggcorrplot)
+require(ggdendro)
+require(ggpubr)
+require(ggpmisc)
+require(grid)
+require(gridExtra)
+require(tibble)
+require(kableExtra)
+library(patchwork)
+library(ggpubr)
+library(shinybusy)
+#options(show.error.messages = FALSE)
+#__________________________________________________________________________________________
+#### CREATE A CONNECTION TO OneBenthic LIVE ####
+Sys.setenv(R_CONFIG_ACTIVE = "one_benthic")
+
+dw <- config::get()
+
+pool <- dbPool(drv = dbDriver(dw$driver),
+               dbname = dw$database,
+               host = dw$server,
+               port =  dw$port,
+               user = dw$uid,
+               password = dw$pwd)
+#__________________________________________________________________________________________
+#### GET STATION DATA ####
+data <- dbGetQuery(pool,                   
+                  "select 
+s.samplecode,
+s.year,
+s.gear_gearcode,
+s.samplelong,
+s.samplelat,
+cl.baselinefaunalcluster_faunalcluster as cluster,
+st.stationcode,
+sus.survey_surveyname,
+stationgroup,
+stationsubgroup1
+
+
+from derived_data.cluster as cl
+inner join samples.sample as s on s.samplecode = cl.sample_samplecode
+inner join associations.samplestation as ss on ss.sample_samplecode = s.samplecode
+inner join associations.station as st on st.stationcode = ss.station_stationcode
+inner join associations.surveysample as sus on sus.sample_samplecode = s.samplecode
+where baselinefaunalcluster_faunalcluster != 'none' 
+")
+#__________________________________________________________________________________________
+#### GET SAMPLE DATA ####
+samclus <- dbGetQuery(pool,                   
+                  "select 
+s.samplecode,
+s.year,
+s.gear_gearcode,
+s.samplelong,
+s.samplelat,
+cl.baselinefaunalcluster_faunalcluster as cluster,
+sus.survey_surveyname as survey
+
+
+
+from derived_data.cluster as cl
+inner join samples.sample as s on s.samplecode = cl.sample_samplecode
+inner join associations.surveysample as sus on sus.sample_samplecode = s.samplecode
+where baselinefaunalcluster_faunalcluster != 'none'
+and sus.survey_surveyname !='REBENT: Benthic Networking'
+and sus.survey_surveyname !='Macrobenthos from the Norwegian waters'
+and sus.survey_surveyname !='Macrozoobenthos data from the southeastern North Sea in 2000'
+and sus.survey_surveyname !='Dutch long term monitoring of macrobenthos in the Dutch Continental Economical Zone of the North Sea'
+and sus.survey_surveyname !='Macrobenthos monitoring at long-term monitoring locations, period 2001-ongoing'
+and sus.survey_surveyname !='North Sea Benthos Survey'")
+#__________________________________________________________________________________________
+#### BRING IN ACTIVITY LAYERS ####
+
+## API
+#Source: EU level: https://www.emodnet-humanactivities.eu/view-data.php 
+euowf <- readLines("https://ows.emodnet-humanactivities.eu/wfs?SERVICE=WFS&VERSION=1.1.0&request=GetFeature&typeName=windfarmspoly&OUTPUTFORMAT=json") %>% paste(collapse = "\n") %>% geojson_sf()
+owf <- readLines("https://opendata.arcgis.com/datasets/4da955de094e475d8d902ee446e38d58_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+owf_cab <- readLines("https://opendata.arcgis.com/datasets/c15c075302eb40c9922244a3794d73b1_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+wave <- readLines("https://opendata.arcgis.com/datasets/d9f9dbc0e29b410c87ba544f6082a0d0_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+tidal <- readLines("https://opendata.arcgis.com/datasets/db94124b152641a992d4e8dfa14d59f2_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+tidal_cab <- readLines("https://opendata.arcgis.com/datasets/3e5203ce7daa4ae08690699925668f46_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+oga <- readLines("https://opendata.arcgis.com/datasets/3c950a2c8186438899f99ced733dd947_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+R4_chara <- readLines("https://opendata.arcgis.com/datasets/c0e61d8972e4438ab1c39304b7f28608_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+R4_bid <- readLines("https://opendata.arcgis.com/datasets/54dce8a263324a85b36523e31fff20cc_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+
+## SPATIAL DATA FROM ONEBENTHIC
+mcz <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'MCZ - Secretary of State';")
+sac <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'SAC'or site_statu = 'cSAC';")
+ncmpa <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'NCMPA';")
+disp  <-  st_read(pool, query = "SELECT * FROM spatial.disposalSiteJan2020;")
+ref <- st_read(pool, query = "SELECT * FROM spatial.ref_box_all;")
+siz<- st_read(pool, query = "SELECT * FROM ap_marine_aggregate.extraction_areas_siz;")
+agg <- st_read(pool, query = "SELECT * FROM ap_marine_aggregate.extraction_areas;")
+
+## Check CRS
+st_crs(mcz)#Coordinate Reference System: NA
+st_crs(sac)#Coordinate Reference System: NA
+st_crs(ncmpa)#Coordinate Reference System: NA
+st_crs(oga)#Coordinate Reference System: NA
+st_crs(disp)#Coordinate Reference System: NA
+st_crs(agg) # 4326
+st_crs(owf)#Coordinate Reference System: NA
+st_crs(owf_cab)#Coordinate Reference System: NA
+st_crs(wave)#Coordinate Reference System: NA
+st_crs(tidal)#Coordinate Reference System: NA
+st_crs(tidal_cab)#Coordinate Reference System: NA
+st_crs(R4_chara)#Coordinate Reference System: NA
+st_crs(R4_bid)#Coordinate Reference System: NA
+
+## Set CRS where necessary
+st_crs(mcz) <- 4326
+st_crs(sac) <- 4326
+st_crs(ncmpa) <- 4326
+st_crs(disp) <- 4326
+
+```
+
+```{r}
+## Add busy spinner from shinybusy package
+#https://dreamrs.github.io/shinybusy/
+#https://cran.r-project.org/web/packages/shinybusy/shinybusy.pdf
+add_busy_spinner(spin = "fading-circle",position = "bottom-left",margins = c(40, 60),color = "#044D94",timeout = 300,height = "70px",width = "70px")##FFFFFF #0D4581
+```
+
+Column {.sidebar data-width=300}
+-----------------------------------------------------------------------
+```{r}
+#### ADD SELECTION BOXES
+selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",style="color:#808080"),choices =unique(data$stationgroup))
+           selectInput(inputId="regionInput", multiple = F,h4("Select Survey Array",style="color:#808080"),choices =NULL)
+ #__________________________________________________________________________________________           
+#### PROVIDE INPUT OPTIONS FOR ARRAYS AVAILABLE UNDER INITIAL INPUT #### 
+  #https://stackoverflow.com/questions/48376156/updating-a-selectinput-based-on-previous-selectinput-under-common-server-functio
+  observeEvent(input$progInput,{
+    updateSelectInput(session,'regionInput',
+                      choices=unique(data$stationsubgroup1[data$stationgroup==input$progInput]))
+  })
+```
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Map
+
+```{r}
+## Define colours for use in leaflet
+pal <- colorFactor(
+  palette = c('#0000ee','#00ffff','#05aac1','#eeaeee','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404'),
+  domain = data$cluster
+)
+## Create map
+output$map1 <-renderLeaflet({
+leaflet() %>% 
+    #addProviderTiles(providers$Esri.WorldImagery)%>%
+    addProviderTiles(providers$Esri.WorldGrayCanvas,options = providerTileOptions(noWrap = TRUE))%>%
+    addCircleMarkers(data=data,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 1.4,stroke = T, color = ~pal(cluster),group = "stations (all)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
+    addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 1.4,stroke = T, group = "samples (all)",color = ~pal(cluster),popup = paste0("<b>Survey: </b>", samclus$survey,"<br>","<b>Sample Code: </b>", samclus$samplecode))%>% #
+    addPolygons(data=euowf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "euowf",popup = paste0("<b>Name: </b>", euowf$name))%>%
+    addPolygons(data=owf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "owf",popup = paste0("<b>Name: </b>", owf$Name_Prop, "<br>","<b>Status: </b>", owf$Inf_Status))%>%
+    addPolygons(data=owf_cab,color = "#444444", weight = 1, smoothFactor = 0.5,group = "owf_cab",popup = paste0("<b>Name: </b>", owf_cab$Name_Prop, "<br>","<b>Status: </b>", owf_cab$Infra_Stat))%>%
+    addPolygons(data=R4_chara,color = "#444444", weight = 1, smoothFactor = 0.5,group = "R4_chara",popup = paste0("<b>Name: </b>", R4_chara$Name))%>%
+    addPolygons(data=R4_bid,color = "#444444", weight = 1, smoothFactor = 0.5,group = "R4_bid",popup = paste0("<b>Name: </b>", R4_bid$Name, "<br>","<b>Status: </b>", R4_bid$Bidding_Ar))%>%
+    addPolygons(data=agg,color = "#444444", weight = 1, smoothFactor = 0.5,group = "agg (PIZ)",popup = paste0("<b>Name: </b>", agg$area_name, "<br>","<b>Number: </b>", agg$area_numbe))%>%
+    addPolygons(data=siz,color = "#444444", weight = 1, smoothFactor = 0.5,group = "agg (SIZ)",popup = paste0("<b>Name: </b>", siz$area_name, "<br>","<b>Number: </b>", siz$area_numbe))%>%
+    addPolygons(data=ref,color = "#444444", weight = 1, smoothFactor = 0.5,group = "agg (REF)",popup = paste0("<b>Name: </b>", ref$box, "<br>","<b>Status: </b>", ref$sub_region))%>% 
+    addPolygons(data=disp,color = "#444444", weight = 1, smoothFactor = 0.5,group = "disp",popup = paste0("<b>Name: </b>", disp$name_, "<br>","<b>Number: </b>", disp$site_))%>%
+    addPolygons(data=wave,color = "#444444", weight = 1, smoothFactor = 0.5,group = "wave",popup = paste0("<b>Name: </b>", wave$Name_Prop, "<br>","<b>Status: </b>", wave$Inf_Status))%>%
+    addPolygons(data=tidal,color = "#444444", weight = 1, smoothFactor = 0.5,group = "tidal",popup = paste0("<b>Name: </b>", tidal$Name_Prop, "<br>","<b>Status: </b>", tidal$Inf_Status))%>%
+    addPolygons(data=tidal_cab,color = "#444444", weight = 1, smoothFactor = 0.5,group = "tidal_cab",popup = paste0("<b>Name: </b>", tidal_cab$Name_Prop, "<br>","<b>Status: </b>", tidal_cab$Infra_Stat))%>%
+    addPolygons(data=mcz,color = "#444444", weight = 1, smoothFactor = 0.5,group = "mcz",popup = paste0("<b>Name: </b>", mcz$site_name))%>%
+    addPolygons(data=sac,color = "#444444", weight = 1, smoothFactor = 0.5,group = "sac",popup = paste0("<b>Name: </b>", sac$site_name))%>%
+    addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
+    addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
+    addLayersControl(
+    overlayGroups = c("samples (all)","stations (all)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("samples (all)","stations (all)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%#"wave_cab",
+
+    setView(0.54,55.53,zoom=5.3)%>%
+    addMouseCoordinates()
+})
+
+leafletOutput('map1') 
+#__________________________________________________________________________________________
+  #### UPDATE MAP WITH SELECTED SURVEYS ####
+  #https://stackoverflow.com/questions/46979328/how-to-make-shiny-leaflet-map-reac-to-change-in-input-value-r
+  
+  # Watch for selection of new survey(s) 
+  observeEvent(input$regionInput, { 
+    
+    # Modify existing map
+   leafletProxy("map1") %>%
+      
+      # Remove any previous selections 
+      clearGroup("myMarkers") %>%
+      
+     addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 1.4,stroke = T, color = ~pal(cluster),group = "myMarkers",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))
+    
+  })
+
+```
+
+
+Column {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+### Welcome  {data-padding=20}
+
+<div>
+<br>
+<br>
+<br>
+<br>
+<center>
+<strong style="color: #044D94;font-size: 50px;">OneBenthic Baseline Tool (OBBT)<center>
+```{r picturetest, echo = F, out.width = '12%'}
+
+knitr::include_graphics("www/NEWLOGOCROPPED.png")#this works
+```
+<br>
+<strong style="color: #5499C7;font-size: 30px;">Macrofaunal assemblages
+<br>
+<br>
+<img src="www/OBBTWelcomeImage.png" width="300"></center>
+<br>
+```{r,out.width = "900px"}
+## Header: Funders
+knitr::include_graphics("www/logos2.png")#this works
+```
+</div>
+
+### About  {data-padding=20}
+<div>
+
+```{r layersappfunders, echo = F, out.width = '100%'}
+
+## Header: Modelling Methodology
+h3("Purpose",style=c("color:#044D94"))
+p("The OneBenthic Baseline Tool (OBBT) shows the faunal cluster identity of 0.1m2 grab and core samples (processed using a 1mm sieve) held in the",tags$a(href="https://sway.office.com/HM5VkWvBoZ86atYP?ref=Link", "OneBenthic"),"database.","Many of these samples are associated with existing monitoring stations, including those used by the marine aggregates industry under their Regional Seabed Monitoring Programme (RSMP). Cluster groups are based on methodology reported " ,tags$a(href="http://rdcu.be/wi6C", "here."),"New macrofaunal samples can be matched to existing cluster groups using the ",tags$a(href="https://rconnect.cefas.co.uk/onebenthic_faunalclusterid/", "OneBenthic Faunal Cluster ID Tool, "),"following methodology reported", tags$a(href="https://doi.org/10.1016/j.ocecoaman.2020.105361", "here."),"OBBT can be used in conjunction with the ",tags$a(href="https://openscience.cefas.co.uk/ob_mtest/", "OneBenthic M-test Tool"),"which assesses whether impacted sediments at ‘baseline’ stations remain suitable for recolonization by the original faunal assemblage type.")
+
+h3("How to use the app",style=c("color:#044D94"))
+p("Select a monitoring programme and survey array using the drop-down selection boxes. The map will then update with samples coloured according to faunal assemblage type (see 'Cluster Characteristics' tab). Various other map layers can be overlaid in the map (see 'Map Overlays' tab). A table in the 'Sampes' tab provides details of all samples collected at monitoring stations in the selected array. For RSMP arrays, the table includes details of the extraction areas (as defined by the potential secondary impact zone or SIZ) associated with each station, inclusing the licence holder's name.")
+
+h3("Disclaimer",style=c("color:#044D94"))
+p("Whilst due care and attention has been exercised in the collation of",tags$b("OneBenthic"),"data, Cefas assumes no responsibility for the quality or accuracy of the information. Users are advised to check data with the original source, and to critically assess whether data and data products are fit for the user's intended purpose.")
+
+h3("Contact",style=c("color:#044D94"))
+p("Get in touch to tell us how you've used the app, or to report technical issues (Email: keith.cooper@cefas.co.uk)")
+
+```
+</div>
+
+### Cluster Characteristics  {data-padding=20}
+<div>
+
+```{r , echo = F, out.width = '90%'}
+
+p("Biological characteristics of the macrofaunal assemblages identified through a k-means clustering of macrofaunal data (colonials included, forth-root transformation). Characterising species were identified through a SIMPER analysis and include taxa up to a total of 50% contribution. Letters in parenthesis identify the higher level taxonomic group: Amphipod crustacean (A), Ascidian tunicate (AT), Broyzoa (B), Bivalve Mollusc (BM), Crustacean (C), Decapod Crustacean (DC), Echinoderm (E), Polychaete (P), Phoronida (Ph), Nematoda (Ne). Values for Richness and Abundance are means and standard deviations. Arrows indicate the relative size of a value (High, Low and Medium).")
+
+knitr::include_graphics("www/FaunalClusterChara.png")
+
+```
+</div>
+### Map Overlays  {data-padding=20}
+<div>
+
+```{r rtable, echo = F, results='asis'}
+
+## Header: Map overlays
+h3("Map overlays",style=c("color:#044D94"))
+
+## Table of overlay layers
+map_overlays <- data.frame(
+  Code=c(
+    "samples (all)",
+    "stations (all)",
+    "euowf",
+               "owf",
+               "owf_cab",
+               "R4_chara",
+               "R4_bid",
+               "agg (PIZ)",
+         "agg (SIZ)",
+         "agg (REF)",
+               "disp",
+               "wave",
+               #"wave_cab",
+               "tidal",
+               "tidal_cab",
+               "oga",
+               "mcz",
+               "sac",
+               "ncmpa"),
+  Link=c("NA",
+     "NA",
+     '<p><a href="https://www.emodnet-humanactivities.eu/search-results.php?dataname=Wind+Farms+%28Polygons%29"
+      >Wind Farms (Polygons)</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.790200%2C-1.251504%2C7.36"
+      >Offshore Wind Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-cable-agreements-england-wales-ni-the-crown-estate/explore?location=52.588556%2C-1.244512%2C7.00"
+      >Offshore Wind Cable Agreements (England, Wales & NI), The Crown Estate</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-leasing-round-4-characterisation-areas-england-wales-and-ni-the-crown-estate/explore?location=52.677790%2C-1.394816%2C7.18"
+     >Offshore Wind Leasing Round 4 Characterisation Areas (England, Wales and NI), The Crown Estate</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-leasing-round-4-bidding-areas-england-wales-and-ni-the-crown-estate/explore?location=52.930510%2C-0.830858%2C7.00"
+      >Offshore Wind Leasing Round 4 Bidding Areas (England, Wales and NI), The Crown Estate</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-minerals-aggregates-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.033181%2C-1.121135%2C7.89"
+      >Offshore Minerals Aggregates Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
+     "NA",
+     "NA",
+         '<p><a href="http://data.cefas.co.uk/#/View/407"
+      >UK Disposal Site Layer, Cefas</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wave-site-agreements-england-wales-ni-the-crown-estate/explore?location=50.777918%2C-5.092345%2C9.26"
+     >Offshore Wave Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
+         #'<p><a href="https://opendata.arcgis.com/datasets/bf376b05c6ae489b8b8687d6b7d6525d_0.geojson">Visit W3Schools.com!</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-tidal-stream-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.888850%2C-3.683844%2C7.42"
+      >Offshore Tidal Stream Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-tidal-stream-cable-agreements-england-wales-ni-the-crown-estate/explore?location=51.877184%2C-5.315998%2C17.04"
+      >Offshore Tidal Stream Cable Agreements (England, Wales & NI), The Crown Estate</a></p>',
+         '<p><a href="https://data-ogauthority.opendata.arcgis.com/datasets/oga-licences-wgs84-3/explore?location=56.616000%2C-5.050750%2C5.16"
+      >OGA Licences WGS84, Oil and Gas Authority</a></p>',
+         #'<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27/c20190905_OffshoreMPAs_WGS84.shp"
+         '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
+          >Marine Conservation Zones (MCZ)</a></p>',
+         '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
+      >Special Area of Conservation (SAC)</a></p>',
+         '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
+      >Nature Conservation Marine Protected Areas (Scotland)</a></p>'),
+  Description=c("All UK macrofaunal samples from OneBenthic",
+                "All UK macrofaunal monitoring stations from OneBenthic",
+    "Offshore wind installations in European seas from the European Marine Observation and Data Network (EMODnet)",
+          "This dataset represents all current offshore wind farm agreements in pre-planning, planning, construction and operational phases, as well as Preferred Projects subject to HRA, in English, Welsh and Northern Irish waters.",
+          "This dataset represents all current export cables for offshore wind farm agreements in pre-planning, planning, construction and operational phases in English, Welsh and Northern Irish waters.",
+          "This dataset represents areas of seabed defined by The Crown Estate within each of the Bidding Areas which are considered to present the greatest opportunity to Bidders based on thorough assessment of the constraints.",
+          "This dataset represents the external boundary of the areas of seabed within which Bidders can propose projects through the Round 4 leasing process.",
+          "This dataset represents all current marine aggregates licence agreements (Primary Impact Zones) in English, Welsh and Northern Irish waters.",
+          "Potential secondary impact zones (SIZ) associated with marine aggregage extraction licenses",
+          "Reference sites fo rthe Regional Seabed Monitoring Programme",
+          "UK Disposal Sites (layer maintained by Cefas)",
+          "This dataset represents all current wave agreements in English, Welsh and Northern Irish waters.",
+          #"This dataset represents all current wave agreements in English, Welsh and Northern Irish waters.",
+          "This dataset represents all current tidal stream agreements in English, Welsh and Northern Irish waters",
+          "This dataset represents all current export cables for tidal stream agreements in English, Welsh and Northern Irish waters.",
+          "OGA Licences WGS84, Oil and Gas Authority",
+          "Marine Conservation Zones (MCZ)",
+          "Special Area of Conservation (SAC)",
+          "Nature Conservation Marine Protected Areas (Scotland)"))
+
+
+## Create a table for map overlays
+library(knitr)
+  library(kableExtra)
+
+    kable(map_overlays, escape=FALSE,format = "html") %>%
+      column_spec (1, bold = T)%>%
+      kable_styling(bootstrap_options = c("striped","hover", "condensed"))#%>%
+      #scroll_box( height = "900px")#width = "900px",
+
+```
+</div>
+
+
+### Samples  {data-padding=20}
+
+<div>
+```{r, warning=FALSE,message=FALSE}
+library(sf)
+
+#### IDENTIFY POLYGON  FOR POINTS ####
+sf::sf_use_s2(FALSE)# fix: https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
+
+## Check class of points and polygon objects
+#class(agg) #"sf"         "data.frame"
+#class(data)# "data.frame"
+
+
+## Create a reactive object for selected data
+react <- reactive({
+    #saminsiz <- subset(data, stationsubgroup1 == input$regionInput)
+   saminsiz <-  data[ which(data$stationsubgroup1==input$regionInput), ]
+      st_points <- saminsiz %>%
+  mutate_at(vars(samplelong, samplelat), as.numeric) %>%   # coordinates must be numeric
+  st_as_sf(
+    coords = c("samplelong", "samplelat"),
+    agr = "constant",
+    crs = 4326,        # nad83 / new york long island projection
+    stringsAsFactors = FALSE,
+    remove = F)
+
+## Check CRS
+#st_crs(st_points)
+      
+## Get licence area for each sample (where relevant)
+stations_in_siz <- st_join(st_points, siz, join =st_within)
+   st_geometry(stations_in_siz) <- NULL #remove geom colum otherwise it appears in DT
+   stations_in_siz2 <- stations_in_siz[,c(7,1,2,4,5,3,6,16,19)]
+   colnames(stations_in_siz2) <- c("Station","Sample","Year","Longitude","Latitude","Gear","Cluster","Licence","Company")
+   return(stations_in_siz2)
+  })
+
+## Create table
+DT::renderDataTable(
+    
+    DT::datatable(react(), options = list(pageLength = 14, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = "all"))),escape=FALSE)
+  )
+
+```
+
+</div>
+
+
+```{r}
+# Create placeholder for the downloadButton
+uiOutput("downloadUI")
+```
+
+
+<div>
+```{r, warning=FALSE,message=FALSE}
+
+
+# Create the actual downloadButton
+output$downloadUI <- renderUI( {
+  downloadButton("downBtn", "Download data", style = "width:50%;")
+})
+
+# Add download handling
+output$downBtn <- downloadHandler(
+  filename = function() {
+    "data.csv"
+  },
+  content = function(file) {
+    write.csv(react(), file, row.names = FALSE)
+  }
+)
+
+```
+</div>
+
