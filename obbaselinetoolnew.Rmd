@@ -412,7 +412,8 @@ library(knitr)
 library(sf)
 
 #### IDENTIFY POLYGON  FOR POINTS ####
-sf::sf_use_s2(FALSE)# fix: https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
+#sf::sf_use_s2(FALSE)# fix: https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
+sink <- capture.output(sf::sf_use_s2(FALSE))# use this instead to stop message appearing (see https://github.com/r-spatial/sf/issues/1782)
 
 ## Check class of points and polygon objects
 #class(agg) #"sf"         "data.frame"
