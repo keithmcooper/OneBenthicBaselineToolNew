@@ -5,11 +5,11 @@ output:
   flexdashboard::flex_dashboard:
     theme: cerulean
     css: style.css
-    #social: menu
-    #source_code: embed
 runtime: shiny
 resource_files:
 - config.yml
+- www/OBBTWelcomeImage.png
+- www/OBBTWelcomeImage.png
 ---
 
 ```{r setup, include = FALSE}
