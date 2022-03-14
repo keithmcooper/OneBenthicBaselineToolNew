@@ -460,7 +460,7 @@ uiOutput("downloadUI")
 ```
 </div>
 
-<div style="width:290px">
+<div>
 ```{r, warning=FALSE,message=FALSE}
 
 
