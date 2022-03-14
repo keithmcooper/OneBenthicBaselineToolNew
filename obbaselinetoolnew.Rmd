@@ -9,7 +9,6 @@ runtime: shiny
 resource_files:
 - config.yml
 - www/OBBTWelcomeImage.png
-- www/OBBTWelcomeImage.png
 ---
 
 ```{r setup, include = FALSE}
@@ -454,14 +453,14 @@ DT::renderDataTable(
 
 </div>
 
-
+<div>
 ```{r}
 # Create placeholder for the downloadButton
 uiOutput("downloadUI")
 ```
+</div>
 
-
-<div>
+<div style="width:290px">
 ```{r, warning=FALSE,message=FALSE}
 
 
