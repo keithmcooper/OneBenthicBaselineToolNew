@@ -217,11 +217,7 @@ output$map1 <-renderLeaflet({
 leaflet() %>% 
     #addProviderTiles(providers$Esri.WorldImagery)%>%
     addProviderTiles(providers$Esri.WorldGrayCanvas,options = providerTileOptions(noWrap = TRUE))%>%
-
-    ############################
-
         addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "All (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
-    ############################
     addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 3,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "All (fauna)",popup = paste0("<b>Survey: </b>", samclus$survey,"<br>","<b>Sample Code: </b>", samclus$samplecode))%>% #
     addPolygons(data=euowf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "euowf",popup = paste0("<b>Name: </b>", euowf$name))%>%
     addPolygons(data=owf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "owf",popup = paste0("<b>Name: </b>", owf$Name_Prop, "<br>","<b>Status: </b>", owf$Inf_Status))%>%
@@ -239,10 +235,6 @@ leaflet() %>%
     addPolygons(data=sac,color = "#444444", weight = 1, smoothFactor = 0.5,group = "sac",popup = paste0("<b>Name: </b>", sac$site_name))%>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
-    addLayersControl(
-    overlayGroups = c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%#"wave_cab",
-
     setView(0.54,55.53,zoom=5.3)%>%
     addMouseCoordinates()
 })
@@ -261,17 +253,13 @@ leafletOutput('map1')
       # Remove any previous selections 
       clearGroup("Selected (fauna)") %>%
       clearGroup("Selected (phy)") %>%
-    ####################
+
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
-      #####################      
-     addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 3,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
-############
-    
+        addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 3,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
     overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
     hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))
-    ##########
-    
+
   })
 
 ```
@@ -347,8 +335,10 @@ h3("Map overlays",style=c("color:#044D94"))
 ## Table of overlay layers
 map_overlays <- data.frame(
   Code=c(
-    "samples (all)",
-    "stations (all)",
+    "Selected (fauna)",
+    "Selected (phy)",
+    "All (fauna)",
+    "All (phy)",
     "euowf",
                "owf",
                "owf_cab",
@@ -366,7 +356,10 @@ map_overlays <- data.frame(
                "mcz",
                "sac",
                "ncmpa"),
-  Link=c("NA",
+  Link=c(
+    "NA",
+    "NA",
+    "NA",
      "NA",
      '<p><a href="https://www.emodnet-humanactivities.eu/search-results.php?dataname=Wind+Farms+%28Polygons%29"
       >Wind Farms (Polygons)</a></p>',
@@ -400,8 +393,10 @@ map_overlays <- data.frame(
       >Special Area of Conservation (SAC)</a></p>',
          '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
       >Nature Conservation Marine Protected Areas (Scotland)</a></p>'),
-  Description=c("All UK macrofaunal samples from OneBenthic",
-                "All UK macrofaunal monitoring stations from OneBenthic",
+  Description=c("Faunal cluster group for selected stations (see Cooper and Barry (2017) for details).",
+    "Physical cluster group for selected stations (see Cooper and Barry (2017) for details).",
+    "Faunal cluster group for all UK macrofaunal samples in OneBenthic (see Cooper and Barry (2017) for details).",
+                "Physical cluster group for all UK macrofaunal samples in OneBenthic (see Cooper and Barry (2017) for details).",
     "Offshore wind installations in European seas from the European Marine Observation and Data Network (EMODnet)",
           "This dataset represents all current offshore wind farm agreements in pre-planning, planning, construction and operational phases, as well as Preferred Projects subject to HRA, in English, Welsh and Northern Irish waters.",
           "This dataset represents all current export cables for offshore wind farm agreements in pre-planning, planning, construction and operational phases in English, Welsh and Northern Irish waters.",
