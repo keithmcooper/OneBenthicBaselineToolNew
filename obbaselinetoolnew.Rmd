@@ -189,6 +189,10 @@ selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",s
     updateSelectInput(session,'regionInput',
                       choices=unique(data$stationsubgroup1[data$stationgroup==input$progInput]))
   })
+   ########################################        
+           ## TEST TO ADD SELECTED EXTRACTION AREAS ADD SELECTION BOXES#### 25032022 
+#selectInput(inputId="extractionareaInput", multiple = F,h4("Select Extraction Area",style="color:#808080"),choices =unique(agg$area_numbe))
+   #############################        
 ```
 
 
@@ -260,6 +264,14 @@ leafletOutput('map1')
       # Remove any previous selections 
       clearGroup("Selected (fauna)") %>%
       clearGroup("Selected (phy)") %>%
+      
+      ############################
+    ## TEST TO ADD SELECTED EXTRACTION AREAS #### 25032022
+   # clearGroup("selected") %>%
+     #addPolygons(data=agg[agg$area_numbe == input$extractionareaInput, ],color = "#444444", weight = 1, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg$area_name, "<br>","<b>Number: </b>", agg$area_numbe))%>%
+   # addPolygons(data=siz[siz$area_numbe == input$extractionareaInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz$area_name, "<br>","<b>Number: </b>", siz$area_numbe))%>%
+    
+    ##############################
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
