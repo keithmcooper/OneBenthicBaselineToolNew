@@ -77,6 +77,7 @@ s.gear_gearcode,
 s.samplelong,
 s.samplelat,
 cl.baselinefaunalcluster_faunalcluster as cluster,
+cl.baselinephycluster_phycluster as phycluster,
 st.stationcode,
 sus.survey_surveyname,
 stationgroup,
@@ -90,6 +91,12 @@ inner join associations.station as st on st.stationcode = ss.station_stationcode
 inner join associations.surveysample as sus on sus.sample_samplecode = s.samplecode
 where baselinefaunalcluster_faunalcluster != 'none' 
 ")
+#AND baselinephycluster_phycluster != 'none'
+#View(data)
+#unique(data$phycluster)
+#str(data)
+
+data$phycluster <- as.numeric(data$phycluster)
 #__________________________________________________________________________________________
 #### GET SAMPLE DATA ####
 samclus <- dbGetQuery(pool,                   
@@ -100,6 +107,7 @@ s.gear_gearcode,
 s.samplelong,
 s.samplelat,
 cl.baselinefaunalcluster_faunalcluster as cluster,
+cl.baselinephycluster_phycluster as phycluster,
 sus.survey_surveyname as survey
 
 
@@ -195,13 +203,26 @@ pal <- colorFactor(
   palette = c('#0000ee','#00ffff','#05aac1','#eeaeee','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404'),
   domain = data$cluster
 )
+
+pal_phy <- colorFactor(
+  palette = c('#e31a1c','#FF62BC','#fdbf6f','#ff7f00','#FFFF32','#8681E5','#00BFC4','#A3A500','#1f78b4','#39B600'),
+ # palette = c('#FF62BC','#A3A500','#e31a1c','#ff7f00','#8681E5','#fdbf6f','#00BFC4','#ffff32','#1f78b4','#39B600'),
+  domain = data$phycluster
+)
+
+
+
 ## Create map
 output$map1 <-renderLeaflet({
 leaflet() %>% 
     #addProviderTiles(providers$Esri.WorldImagery)%>%
     addProviderTiles(providers$Esri.WorldGrayCanvas,options = providerTileOptions(noWrap = TRUE))%>%
-    addCircleMarkers(data=data,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 1.4,stroke = T, color = ~pal(cluster),group = "stations (all)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
-    addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 1.4,stroke = T, group = "samples (all)",color = ~pal(cluster),popup = paste0("<b>Survey: </b>", samclus$survey,"<br>","<b>Sample Code: </b>", samclus$samplecode))%>% #
+
+    ############################
+
+        addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "All (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
+    ############################
+    addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 3,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "All (fauna)",popup = paste0("<b>Survey: </b>", samclus$survey,"<br>","<b>Sample Code: </b>", samclus$samplecode))%>% #
     addPolygons(data=euowf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "euowf",popup = paste0("<b>Name: </b>", euowf$name))%>%
     addPolygons(data=owf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "owf",popup = paste0("<b>Name: </b>", owf$Name_Prop, "<br>","<b>Status: </b>", owf$Inf_Status))%>%
     addPolygons(data=owf_cab,color = "#444444", weight = 1, smoothFactor = 0.5,group = "owf_cab",popup = paste0("<b>Name: </b>", owf_cab$Name_Prop, "<br>","<b>Status: </b>", owf_cab$Infra_Stat))%>%
@@ -219,8 +240,8 @@ leaflet() %>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
     addLayersControl(
-    overlayGroups = c("samples (all)","stations (all)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("samples (all)","stations (all)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%#"wave_cab",
+    overlayGroups = c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%#"wave_cab",
 
     setView(0.54,55.53,zoom=5.3)%>%
     addMouseCoordinates()
@@ -238,9 +259,18 @@ leafletOutput('map1')
    leafletProxy("map1") %>%
       
       # Remove any previous selections 
-      clearGroup("myMarkers") %>%
-      
-     addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 1.4,stroke = T, color = ~pal(cluster),group = "myMarkers",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))
+      clearGroup("Selected (fauna)") %>%
+      clearGroup("Selected (phy)") %>%
+    ####################
+        addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
+      #####################      
+     addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 3,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
+############
+    
+    addLayersControl(
+    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))
+    ##########
     
   })
 
