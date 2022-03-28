@@ -189,10 +189,10 @@ selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",s
     updateSelectInput(session,'regionInput',
                       choices=unique(data$stationsubgroup1[data$stationgroup==input$progInput]))
   })
-   ########################################        
-           ## TEST TO ADD SELECTED EXTRACTION AREAS ADD SELECTION BOXES#### 25032022 
-#selectInput(inputId="extractionareaInput", multiple = F,h4("Select Extraction Area",style="color:#808080"),choices =unique(agg$area_numbe))
-   #############################        
+      
+## DROP DOWN LIST OF EXT AREA TO ADD TO MAP 
+selectInput(inputId="extractionareaInput", multiple = F,h4("Select Extraction Area",style="color:#808080"),choices =levels(factor(unique(agg$area_numbe))))
+  
 ```
 
 
@@ -221,7 +221,6 @@ output$map1 <-renderLeaflet({
 leaflet() %>% 
     #addProviderTiles(providers$Esri.WorldImagery)%>%
     addProviderTiles(providers$Esri.WorldGrayCanvas,options = providerTileOptions(noWrap = TRUE))%>%
-     #############################
       addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "All (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
     addCircleMarkers(data=samclus,~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "All (fauna)",popup = paste0("<b>Survey: </b>", samclus$survey,"<br>","<b>Sample Code: </b>", samclus$samplecode))%>% #
     addPolygons(data=euowf,color = "#444444", weight = 1, smoothFactor = 0.5,group = "euowf",popup = paste0("<b>Name: </b>", euowf$name))%>%
@@ -256,22 +255,21 @@ leafletOutput('map1')
   #https://stackoverflow.com/questions/46979328/how-to-make-shiny-leaflet-map-reac-to-change-in-input-value-r
   
   # Watch for selection of new survey(s) 
-  observeEvent(input$regionInput, { 
+  #observeEvent(input$regionInput, { 
     
+observeEvent(c(input$regionInput,  input$extractionareaInput),{
     # Modify existing map
    leafletProxy("map1") %>%
       
       # Remove any previous selections 
       clearGroup("Selected (fauna)") %>%
       clearGroup("Selected (phy)") %>%
+      clearGroup("selected") %>%
       
-      ############################
-    ## TEST TO ADD SELECTED EXTRACTION AREAS #### 25032022
-   # clearGroup("selected") %>%
-     #addPolygons(data=agg[agg$area_numbe == input$extractionareaInput, ],color = "#444444", weight = 1, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg$area_name, "<br>","<b>Number: </b>", agg$area_numbe))%>%
-   # addPolygons(data=siz[siz$area_numbe == input$extractionareaInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz$area_name, "<br>","<b>Number: </b>", siz$area_numbe))%>%
-    
-    ##############################
+## Add selected PIZ/SIZ
+         addPolygons(data=agg[agg$area_numbe == input$extractionareaInput, ],fillColor = "#444444",stroke = T,opacity = 0.3, weight=1, color="#444444", fillOpacity = 0.2, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg[agg$area_numbe == input$extractionareaInput, ]$area_name, "<br>","<b>Number: </b>", agg[agg$area_numbe == input$extractionareaInput, ]$area_numbe))%>%#, color="black"
+    addPolygons(data=siz[siz$area_numbe == input$extractionareaInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$extractionareaInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$extractionareaInput, ]$area_numbe))%>%
+
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
