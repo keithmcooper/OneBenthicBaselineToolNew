@@ -133,11 +133,13 @@ owf_cab <- readLines("https://opendata.arcgis.com/datasets/c15c075302eb40c992224
 wave <- readLines("https://opendata.arcgis.com/datasets/d9f9dbc0e29b410c87ba544f6082a0d0_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
 tidal <- readLines("https://opendata.arcgis.com/datasets/db94124b152641a992d4e8dfa14d59f2_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
 tidal_cab <- readLines("https://opendata.arcgis.com/datasets/3e5203ce7daa4ae08690699925668f46_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-oga <- readLines("https://opendata.arcgis.com/datasets/3c950a2c8186438899f99ced733dd947_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+#oga <- readLines("https://opendata.arcgis.com/datasets/3c950a2c8186438899f99ced733dd947_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+#oga <- readLines("https://opendata.arcgis.com/datasets/ab4f6b9519794522aa6ffa6c31617bf8_0.geojson") %>%
 R4_chara <- readLines("https://opendata.arcgis.com/datasets/c0e61d8972e4438ab1c39304b7f28608_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
 R4_bid <- readLines("https://opendata.arcgis.com/datasets/54dce8a263324a85b36523e31fff20cc_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
 
 ## SPATIAL DATA FROM ONEBENTHIC
+oga <- st_read(pool, query = "SELECT * FROM spatial.oga_licences_wgs84;")
 mcz <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'MCZ - Secretary of State';")
 sac <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'SAC'or site_statu = 'cSAC';")
 ncmpa <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'NCMPA';")
@@ -242,7 +244,7 @@ leaflet() %>%
     ######################
   addLayersControl(
     overlayGroups = c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%
+    hideGroup(c("All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%#
   
   ###############################
     setView(0.54,55.53,zoom=5.3)%>%
@@ -274,7 +276,7 @@ observeEvent(c(input$regionInput,  input$extractionareaInput),{
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
     overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))
+    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))#
 
   })
 
