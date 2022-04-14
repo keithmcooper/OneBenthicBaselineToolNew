@@ -125,18 +125,28 @@ and sus.survey_surveyname !='North Sea Benthos Survey'")
 #__________________________________________________________________________________________
 #### BRING IN ACTIVITY LAYERS ####
 
+## Bring in api links table
+apilink <- st_read (dsn = pool, query = "SELECT * FROM spatial.apilinks")
+
+## Select only the apilink
+euowfapilink <- apilink[apilink$id ==1 , "apilink"]
+owfapilink <-apilink[apilink$id ==2 , "apilink"]
+owf_cabapilink <-apilink[apilink$id ==3 , "apilink"]
+waveapilink <-apilink[apilink$id ==4 , "apilink"]
+tidalapilink <-apilink[apilink$id ==5 , "apilink"]
+tidal_cabapilink <-apilink[apilink$id ==6 , "apilink"]
+R4_charaapilink <-apilink[apilink$id ==7 , "apilink"]
+R4_bidapilink <-apilink[apilink$id ==8 , "apilink"]
+
 ## API
-#Source: EU level: https://www.emodnet-humanactivities.eu/view-data.php 
-euowf <- readLines("https://ows.emodnet-humanactivities.eu/wfs?SERVICE=WFS&VERSION=1.1.0&request=GetFeature&typeName=windfarmspoly&OUTPUTFORMAT=json") %>% paste(collapse = "\n") %>% geojson_sf()
-owf <- readLines("https://opendata.arcgis.com/datasets/4da955de094e475d8d902ee446e38d58_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-owf_cab <- readLines("https://opendata.arcgis.com/datasets/c15c075302eb40c9922244a3794d73b1_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-wave <- readLines("https://opendata.arcgis.com/datasets/d9f9dbc0e29b410c87ba544f6082a0d0_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-tidal <- readLines("https://opendata.arcgis.com/datasets/db94124b152641a992d4e8dfa14d59f2_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-tidal_cab <- readLines("https://opendata.arcgis.com/datasets/3e5203ce7daa4ae08690699925668f46_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-#oga <- readLines("https://opendata.arcgis.com/datasets/3c950a2c8186438899f99ced733dd947_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-#oga <- readLines("https://opendata.arcgis.com/datasets/ab4f6b9519794522aa6ffa6c31617bf8_0.geojson") %>%
-R4_chara <- readLines("https://opendata.arcgis.com/datasets/c0e61d8972e4438ab1c39304b7f28608_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
-R4_bid <- readLines("https://opendata.arcgis.com/datasets/54dce8a263324a85b36523e31fff20cc_0.geojson") %>% paste(collapse = "\n") %>% geojson_sf()
+euowf <- readLines(as.character(euowfapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+owf <- readLines(as.character(owfapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+owf_cab <- readLines(as.character(owf_cabapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+wave <- readLines(as.character(waveapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+tidal <- readLines(as.character(tidalapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+tidal_cab <- readLines(as.character(tidal_cabapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+R4_chara <- readLines(as.character(R4_charaapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
+R4_bid <- readLines(as.character(R4_bidapilink)) %>% paste(collapse = "\n") %>% geojson_sf()
 
 ## SPATIAL DATA FROM ONEBENTHIC
 oga <- st_read(pool, query = "SELECT * FROM spatial.oga_licences_wgs84;")
@@ -167,6 +177,7 @@ st_crs(R4_bid)#Coordinate Reference System: NA
 st_crs(mcz) <- 4326
 st_crs(sac) <- 4326
 st_crs(ncmpa) <- 4326
+st_crs(oga) <- 4326
 st_crs(disp) <- 4326
 
 ```
@@ -381,36 +392,51 @@ map_overlays <- data.frame(
      "NA",
      '<p><a href="https://www.emodnet-humanactivities.eu/search-results.php?dataname=Wind+Farms+%28Polygons%29"
       >Wind Farms (Polygons)</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.790200%2C-1.251504%2C7.36"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::wind-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.790200%2C-1.251504%2C7.42"
       >Offshore Wind Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-cable-agreements-england-wales-ni-the-crown-estate/explore?location=52.588556%2C-1.244512%2C7.00"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::wind-cable-agreements-england-wales-ni-the-crown-estate/explore?location=52.698964%2C-1.244512%2C7.39"
       >Offshore Wind Cable Agreements (England, Wales & NI), The Crown Estate</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-leasing-round-4-characterisation-areas-england-wales-and-ni-the-crown-estate/explore?location=52.677790%2C-1.394816%2C7.18"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::offshore-wind-leasing-round-4-characterisation-areas-england-wales-and-ni-the-crown-estate/explore?location=52.677790%2C-1.394816%2C7.24"
      >Offshore Wind Leasing Round 4 Characterisation Areas (England, Wales and NI), The Crown Estate</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wind-leasing-round-4-bidding-areas-england-wales-and-ni-the-crown-estate/explore?location=52.930510%2C-0.830858%2C7.00"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::offshore-wind-leasing-round-4-bidding-areas-england-wales-and-ni-the-crown-estate/explore?location=53.040550%2C-0.830858%2C7.17"
       >Offshore Wind Leasing Round 4 Bidding Areas (England, Wales and NI), The Crown Estate</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-minerals-aggregates-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.033181%2C-1.121135%2C7.89"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::aggregates-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.033181%2C-1.121135%2C7.89"
       >Offshore Minerals Aggregates Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
+    
      "NA",
+    
      "NA",
+    
          '<p><a href="http://data.cefas.co.uk/#/View/407"
       >UK Disposal Site Layer, Cefas</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-wave-site-agreements-england-wales-ni-the-crown-estate/explore?location=50.777918%2C-5.092345%2C9.26"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::wave-site-agreements-england-wales-ni-the-crown-estate/explore?location=50.777918%2C-5.092345%2C9.32"
      >Offshore Wave Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
+    
          #'<p><a href="https://opendata.arcgis.com/datasets/bf376b05c6ae489b8b8687d6b7d6525d_0.geojson">Visit W3Schools.com!</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-tidal-stream-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.888850%2C-3.683844%2C7.42"
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::tidal-stream-site-agreements-england-wales-ni-the-crown-estate/explore?location=52.888850%2C-3.683844%2C7.48"
       >Offshore Tidal Stream Site Agreements (England, Wales & NI), The Crown Estate</a></p>',
-         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/offshore-tidal-stream-cable-agreements-england-wales-ni-the-crown-estate/explore?location=51.877184%2C-5.315998%2C17.04"
+    
+         '<p><a href="https://opendata-thecrownestate.opendata.arcgis.com/datasets/thecrownestate::tidal-stream-cable-agreements-england-wales-ni-the-crown-estate/explore?location=51.877184%2C-5.315998%2C17.11"
       >Offshore Tidal Stream Cable Agreements (England, Wales & NI), The Crown Estate</a></p>',
+    
          '<p><a href="https://data-ogauthority.opendata.arcgis.com/datasets/oga-licences-wgs84-3/explore?location=56.616000%2C-5.050750%2C5.16"
       >OGA Licences WGS84, Oil and Gas Authority</a></p>',
-         #'<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27/c20190905_OffshoreMPAs_WGS84.shp"
-         '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
+    
+        '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
           >Marine Conservation Zones (MCZ)</a></p>',
+    
          '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
       >Special Area of Conservation (SAC)</a></p>',
+    
          '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
       >Nature Conservation Marine Protected Areas (Scotland)</a></p>'),
+  
   Description=c("Faunal cluster group for selected stations (see Cooper and Barry (2017) for details).",
     "Physical cluster group for selected stations (see Cooper and Barry (2017) for details).",
     "Faunal cluster group for all UK macrofaunal samples in OneBenthic (see Cooper and Barry (2017) for details).",
