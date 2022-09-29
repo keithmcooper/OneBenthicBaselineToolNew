@@ -313,7 +313,6 @@ knitr::include_graphics("www/NEWLOGOCROPPED.png")#this works
 <br>
 <strong style="color: #5499C7;font-size: 30px;">Macrofaunal assemblages
 <br>
-<br>
 <img src="www/OBBTWelcomeImage.png" width="300"></center>
 <br>
 ```{r,out.width = "800px"}
