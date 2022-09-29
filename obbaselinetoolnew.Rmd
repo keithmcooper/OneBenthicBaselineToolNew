@@ -192,6 +192,7 @@ add_busy_spinner(spin = "fading-circle",position = "bottom-left",margins = c(40,
 Column {.sidebar data-width=300}
 -----------------------------------------------------------------------
 ```{r}
+br()
 #### ADD SELECTION BOXES
 selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",style="color:#808080"),choices =unique(data$stationgroup))
            selectInput(inputId="regionInput", multiple = F,h4("Select Survey Array",style="color:#808080"),choices =NULL)
@@ -315,7 +316,7 @@ knitr::include_graphics("www/NEWLOGOCROPPED.png")#this works
 <br>
 <img src="www/OBBTWelcomeImage.png" width="300"></center>
 <br>
-```{r,out.width = "900px"}
+```{r,out.width = "800px"}
 ## Header: Funders
 knitr::include_graphics("www/logos2.png")#this works
 ```
@@ -517,7 +518,7 @@ stations_in_siz <- st_join(st_points, siz, join =st_within)
 ## Create table
 DT::renderDataTable(
     
-    DT::datatable(react(), options = list(pageLength = 14, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = "all"))),escape=FALSE)
+    DT::datatable(react(), options = list(pageLength = 12, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = "all"))),escape=FALSE)
   )
 
 ```
