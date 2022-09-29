@@ -205,7 +205,7 @@ selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",s
   })
       
 ## DROP DOWN LIST OF EXT AREA TO ADD TO MAP 
-selectInput(inputId="extractionareaInput", multiple = F,h4("Select Extraction Area",style="color:#808080"),choices =levels(factor(unique(agg$area_numbe))))
+selectInput(inputId="extractionareaInput", multiple =F,h4("Select Extraction Area",style="color:#808080"),choices =levels(factor(unique(agg$area_numbe))))
   
 ```
 
@@ -518,7 +518,7 @@ stations_in_siz <- st_join(st_points, siz, join =st_within)
 ## Create table
 DT::renderDataTable(
     
-    DT::datatable(react(), options = list(pageLength = 12, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = "all"))),escape=FALSE)
+    DT::datatable(react(), options = list(pageLength = 10, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = "all"))),escape=FALSE)
   )
 
 ```
