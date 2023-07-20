@@ -206,7 +206,6 @@ selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",s
       
 ## DROP DOWN LIST OF EXT AREA TO ADD TO MAP 
 selectInput(inputId="extractionareaInput", multiple =F,h4("Select Extraction Area",style="color:#808080"),choices =levels(factor(unique(agg$area_numbe))))
-  
 ```
 
 
