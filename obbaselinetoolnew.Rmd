@@ -194,18 +194,46 @@ Column {.sidebar data-width=300}
 ```{r}
 br()
 #### ADD SELECTION BOXES
-selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",style="color:#808080"),choices =unique(data$stationgroup))
-           selectInput(inputId="regionInput", multiple = F,h4("Select Survey Array",style="color:#808080"),choices =NULL)
+#selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",style="color:#808080"),choices =unique(data$stationgroup))
+#selectInput(inputId="regionInput", multiple = F,h4("Select Survey Array",style="color:#808080"),choices =NULL)
+
  #__________________________________________________________________________________________           
 #### PROVIDE INPUT OPTIONS FOR ARRAYS AVAILABLE UNDER INITIAL INPUT #### 
   #https://stackoverflow.com/questions/48376156/updating-a-selectinput-based-on-previous-selectinput-under-common-server-functio
+#  observeEvent(input$progInput,{
+#    updateSelectInput(session,'regionInput',
+#                      choices=unique(data$stationsubgroup1[data$stationgroup==input$progInput]))
+#  })
+    
+# observeEvent(input$regionInput,{
+#     updateSelectInput(session,'siteInput',
+#                       choices=levels(factor(unique(agg$area_numbe[agg$region==input$regionInput]))))
+#   }) 
+
+# selectInput(inputId="siteInput", multiple = F,h4("Select Site",style="color:#808080"),choices =NULL)
+## DROP DOWN LIST OF EXT AREA TO ADD TO MAP 
+#selectInput(inputId="extractionareaInput", multiple =F,h4("Select Extraction Area",style="color:#808080"),choices =levels(factor(unique(agg$area_numbe))))
+##############################################
+ #####################################
+selectInput(inputId="progInput", multiple = F,h4("Select Monitoring Programme",style="color:#808080"),choices =unique(data$stationgroup))
+selectInput(inputId="regionInput", multiple = F,h4("Select Survey Array",style="color:#808080"),choices =NULL)
+
   observeEvent(input$progInput,{
     updateSelectInput(session,'regionInput',
                       choices=unique(data$stationsubgroup1[data$stationgroup==input$progInput]))
   })
-      
-## DROP DOWN LIST OF EXT AREA TO ADD TO MAP 
-selectInput(inputId="extractionareaInput", multiple =F,h4("Select Extraction Area",style="color:#808080"),choices =levels(factor(unique(agg$area_numbe))))
+
+  
+ 
+
+observeEvent(input$regionInput,{
+  
+   # test() = levels( factor(unique(agg$area_numbe[agg$region==input$regionInput]))  )[1]
+    updateSelectInput(session,'siteInput',
+                     choices=levels(factor(unique(agg$area_numbe[agg$region==input$regionInput]))))
+ })
+
+ selectInput(inputId="siteInput", multiple = F,h4("Select Site",style="color:#808080"), choices = NULL  ) 
 ```
 
 
@@ -270,7 +298,12 @@ leafletOutput('map1')
   # Watch for selection of new survey(s) 
   #observeEvent(input$regionInput, { 
     
-observeEvent(c(input$regionInput,  input$extractionareaInput),{
+#observeEvent(c(input$regionInput,  input$extractionareaInput),{
+observeEvent(  input$siteInput,{
+   site_id = input$siteInput
+  
+  if  ( site_id != ""    )  { 
+  
     # Modify existing map
    leafletProxy("map1") %>%
       
@@ -280,8 +313,8 @@ observeEvent(c(input$regionInput,  input$extractionareaInput),{
       clearGroup("selected") %>%
       
 ## Add selected PIZ/SIZ
-         addPolygons(data=agg[agg$area_numbe == input$extractionareaInput, ],fillColor = "#444444",stroke = T,opacity = 0.3, weight=1, color="#444444", fillOpacity = 0.2, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg[agg$area_numbe == input$extractionareaInput, ]$area_name, "<br>","<b>Number: </b>", agg[agg$area_numbe == input$extractionareaInput, ]$area_numbe))%>%#, color="black"
-    addPolygons(data=siz[siz$area_numbe == input$extractionareaInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$extractionareaInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$extractionareaInput, ]$area_numbe))%>%
+         addPolygons(data=agg[agg$area_numbe == input$siteInput, ],fillColor = "#444444",stroke = T,opacity = 0.4, weight=1, color="#444444", fillOpacity = 0.2, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg[agg$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", agg[agg$area_numbe == input$siteInput, ]$area_numbe))%>%#, color="black"
+    #addPolygons(data=siz[siz$area_numbe == input$siteInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$siteInput, ]$area_numbe))%>%
 
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
@@ -289,6 +322,7 @@ observeEvent(c(input$regionInput,  input$extractionareaInput),{
     overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
     hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))#
 
+  }
   })
 
 ```
@@ -516,7 +550,8 @@ stations_in_siz <- st_join(st_points, siz, join =st_within)
 ## Create table
 DT::renderDataTable(
     
-    DT::datatable(react(), options = list(pageLength = 10, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = "all"))),escape=FALSE)
+    #DT::datatable(react(), options = list(pageLength = 10, scrollX='400px',scrollY=FALSE,columnDefs = list(list(className = 'dt-center', targets = c(0:10)))),escape=FALSE)#"all"
+    DT::datatable(react(), fillContainer = TRUE,options = list(pageLength = 10, scrollY = "475px",columnDefs = list(list(className = 'dt-center', targets = c(0:10)))),escape=FALSE)#"all"
   )
 
 ```
