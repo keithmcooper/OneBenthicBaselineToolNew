@@ -155,8 +155,8 @@ sac <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs8
 ncmpa <-  st_read(pool, query = "SELECT * FROM spatial.c20190905_offshorempas_wgs84 WHERE site_statu = 'NCMPA';")
 disp  <-  st_read(pool, query = "SELECT * FROM spatial.disposalSiteJan2020;")
 ref <- st_read(pool, query = "SELECT * FROM spatial.ref_box_all;")
-siz<- st_read(pool, query = "SELECT * FROM ap_marine_aggregate.extraction_areas_siz;")
-agg <- st_read(pool, query = "SELECT * FROM ap_marine_aggregate.extraction_areas;")
+siz<- st_read(pool, query = "SELECT * FROM ap_marine_aggregate.extraction_areas_siz where droped = FALSE;")
+agg <- st_read(pool, query = "SELECT * FROM ap_marine_aggregate.extraction_areas where droped = FALSE;")
 
 ## Check CRS
 st_crs(mcz)#Coordinate Reference System: NA
