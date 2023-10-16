@@ -165,6 +165,7 @@ st_crs(ncmpa)#Coordinate Reference System: NA
 st_crs(oga)#Coordinate Reference System: NA
 st_crs(disp)#Coordinate Reference System: NA
 st_crs(agg) # 4326
+st_crs(siz) # 4326
 st_crs(owf)#Coordinate Reference System: NA
 st_crs(owf_cab)#Coordinate Reference System: NA
 st_crs(wave)#Coordinate Reference System: NA
@@ -314,7 +315,7 @@ observeEvent(  input$siteInput,{
       
 ## Add selected PIZ/SIZ
          addPolygons(data=agg[agg$area_numbe == input$siteInput, ],fillColor = "#444444",stroke = T,opacity = 0.4, weight=1, color="#444444", fillOpacity = 0.2, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg[agg$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", agg[agg$area_numbe == input$siteInput, ]$area_numbe))%>%#, color="black"
-    #addPolygons(data=siz[siz$area_numbe == input$siteInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$siteInput, ]$area_numbe))%>%
+         addPolygons(data=siz[siz$area_numbe == input$siteInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$siteInput, ]$area_numbe))%>%
 
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
