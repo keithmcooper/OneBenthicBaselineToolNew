@@ -596,3 +596,245 @@ output$downBtn <- downloadHandler(
 ```
 </div>
 
+### Areas involved  {data-padding=20}
+
+<div>
+```{r, warning=FALSE,message=FALSE}
+## Load polygon
+library (RPostgres)
+library(pool)
+library(sf)
+library(dplyr)
+Sys.setenv(R_CONFIG_ACTIVE = "one_benthic")
+dw <- config::get()
+pool <- dbPool(drv = dbDriver(dw$driver),
+               dbname = dw$database,
+               host = dw$server,
+               port =  dw$port,
+               user = dw$uid,
+               password = dw$pwd)
+#agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")
+#v <- vect(system.file("ex/lux.shp", package="terra"))
+#plot(agg_region)
+#ag_region <- agg_region[which(agg_region$stationsubgroup1 == 'Anglian RSMP'),]
+#plot(agg_region)
+# subset area using polygons
+#r_agg_region <- crop(r, agg_region, mask=TRUE)
+## Load raster and vector layers
+library(terra)
+r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBiodiversityLayersApp/R/www/Assemblages.tif")
+#r <- round(r/100)
+
+###############
+
+## RASTER EXTENT
+raster_extent <-  st_read(pool, query ="SELECT * from spatial.raster_extent_polygon;")# Read in data
+#plot(raster_extent) # plot polygons
+#names(raster_extent)# Check col names
+raster_extent2 <- raster_extent[,c(1,2,3,4)] # take cols of interest
+#names(raster_extent2)# Check col names
+names(raster_extent2)[2] <- 'name'
+names(raster_extent2)[3] <- 'area_km2'# Update col names so all polygon dfs have same names and can be joined
+raster_extent3 <- st_cast(raster_extent2, "POLYGON")# convert from multipolygon to polygon
+#names(raster_extent3)
+#class(raster_extent3)
+#head(raster_extent3)
+raster_extent3$name <- 'NW Europe'
+
+## UK EEZ
+uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")# Read in data
+#plot(uk_eez) # plot polygons
+#names(uk_eez)# Check col names
+uk_eez2 <- uk_eez[,c(1,2,5,6)] # take cols of interest
+#names(uk_eez2)# Check col names
+names(uk_eez2)[3] <- 'area_km2'# Update col names so all polygon dfs have same names and can be joined
+uk_eez3 <- st_cast(uk_eez2, "POLYGON")# convert from multipolygon to polygon
+#names(uk_eez3)
+##class(uk_eez3)
+uk_eez3$name <- 'UK EEZ'
+
+## AGGREGATE REGIONS
+agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")# Read in data
+#plot(agg_region) # plot polygons
+#names(agg_region)# Check col names
+names(agg_region)[2] <- 'name'## Update col names so all polygon dfs have same names and can be joined
+#names(agg_region)
+#class(agg_region)
+
+## AGGREGATE SIZs
+agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
+#plot(agg_siz) # plot polygons
+#names(agg_siz)# Check col names
+agg_siz2 <- agg_siz[,c(1,6,10,19)] # take cols of interest
+#head(agg_siz2)
+
+
+names(agg_siz2) <- c('id','name','area_km2','geom')## Update col names so all polygon dfs have same names and can be joined
+agg_siz3 <- st_cast(agg_siz2, "POLYGON")# convert from multipolygon to polygon
+#names(agg_siz3)
+#class(agg_siz3)
+#head(agg_siz3)
+
+## AGGREGATE SIZs ALL
+agg_siz_all <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
+#plot(agg_siz_all) # plot polygons
+#names(agg_siz_all)# Check col names
+agg_siz_all2 <- agg_siz_all[,c(1,4,6,10,19)] # take cols of interest
+#head(agg_siz_all2)
+
+names(agg_siz_all2) <- c('id','region','name','area_km2','geom')## Update col names so all polygon dfs have same names and can be joined
+agg_siz_all3 <- st_cast(agg_siz_all2, "POLYGON")# convert from multipolygon to polygon
+#names(agg_siz_all3)
+#class(agg_siz_all3)
+#head(agg_siz_all3)
+
+## SIZ HUM
+agg_siz_hum <- agg_siz_all3%>%filter(region=='Humber RSMP') # subset polygons for region
+agg_siz_hum2 <- agg_siz_hum[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_hum2)[2] <- 'name'# update col names
+#class(agg_siz_hum2)
+agg_siz_hum_comb <- agg_siz_hum2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_hum_comb)
+agg_siz_hum_comb$name <- 'H Footprint'# add in missing cols
+agg_siz_hum_comb$id <- 'H Footprint'# add in missing cols
+agg_siz_hum_comb$area_km2 <- ''# add in missing cols
+agg_siz_hum_comb2 <- agg_siz_hum_comb[,c(4,3,5,1)] # get cols in correct order
+#agg_siz_hum_comb2 # check order
+#agg_siz_hum_comb2$name <- 'H Footprint'
+
+## SIZ A
+agg_siz_ang <- agg_siz_all3%>%filter(region=='Anglian RSMP') # subset polygons for region
+agg_siz_ang2 <- agg_siz_ang[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_ang2)[2] <- 'name'# update col names
+#class(agg_siz_ang2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_ang_comb <- agg_siz_ang2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_ang_comb)
+agg_siz_ang_comb$name <- 'A Footprint'# add in missing cols
+agg_siz_ang_comb$id <- 'A Footprint'# add in missing cols
+agg_siz_ang_comb$area_km2 <- ''# add in missing cols
+agg_siz_ang_comb2 <- agg_siz_ang_comb[,c(4,3,5,1)] # get cols in correct order
+#agg_siz_ang_comb2 # check order
+#agg_siz_ang_comb2$name <- 'A Footprint'
+
+## SIZ SC
+agg_siz_sc <- agg_siz_all3%>%filter(region=='South Coast RSMP') # subset polygons for region
+agg_siz_sc2 <- agg_siz_sc[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_sc2)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_sc_comb <- agg_siz_sc2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_sc_comb$name <- 'SC Footprint'# add in missing cols
+agg_siz_sc_comb$id <- 'SC Footprint'# add in missing cols
+agg_siz_sc_comb$area_km2 <- ''# add in missing cols
+agg_siz_sc_comb2 <- agg_siz_sc_comb[,c(4,3,5,1)] # get cols in correct order
+#agg_siz_sc_comb2 # check order
+#agg_siz_sc_comb2$name <- 'SC Footprint'
+#######
+#######
+
+## Stich all polygons together
+all_poly <- rbind(raster_extent3,uk_eez3,agg_region,agg_siz3,agg_siz_hum_comb2,agg_siz_sc_comb2,agg_siz_ang_comb2 )
+#head(all_poly)
+#plot(all_poly)
+#all_poly <- poly
+
+## Create a df with ID and polyname 
+all_poly_names <- as.data.frame(all_poly[,2])# Extract polygon names
+all_poly_names2 <- all_poly_names %>% mutate(ID = row_number())# turn row numers into a col called 'ID'
+#head(all_poly_names2)
+
+## AREAS AND PROPORTIONS FOR ALL REGIONAL POLYGONS ##
+library(terra)
+
+# extract cluster by polygon
+example<-terra::extract(r,all_poly, ID=T)
+#head(example)
+## Number of cells by cluster by poly
+example2 <- example%>%group_by(ID)%>%count(Assemblages)
+#head(example2)
+example2 <- as.data.frame(example2)
+
+## Remove rows with NA
+example3 <- example2[complete.cases(example2), ]
+#head(example3)
+
+## Add in polygon names
+merge_test <- merge(example3,all_poly_names2, by='ID')
+#View(merge_test)
+## Proxt search terms
+
+
+## Now do a tes extraction
+#selected_data <- merge_test[which(merge_test$name=='NW Europe'|merge_test$name=='UK EEZ'|merge_test$name=='South Coast RSMP'|merge_test$name=='127'|merge_test$name=='SC Footprint'),]#|merge_test$name=='Humber RSMP'|merge_test$name=='506'
+
+#selected_data <- merge_test[which(merge_test$name=='NW Europe'|merge_test$name=='UK EEZ'|merge_test$name=='Humber RSMP'|merge_test$name=='514/1'|merge_test$name=='H Footprint'),]#|merge_test$name=='Humber RSMP'|merge_test$name=='506'
+
+#selected_data <- merge_test[which(merge_test$name=='NW Europe'|merge_test$name=='UK EEZ'|merge_test$name=='Anglian RSMP'|merge_test$name=='240'|merge_test$name=='A Footprint'),]#|merge_test$name=='Humber RSMP'|merge_test$name=='506'
+
+
+selected_data3 <- reactive({
+selected_data <- merge_test[which(merge_test$name=='NW Europe'|merge_test$name=='UK EEZ'|merge_test$name==input$regionInput),]#|merge_test$name==input$regionInput|merge_test$name==input$siteInput|merge_test$name=='A Footprint'
+#head(selected_data)
+selected_data2 <- selected_data%>%group_by(ID)%>%mutate(sum=sum(n),perc=n/(sum(n))*100)
+return(selected_data2)
+})
+
+renderPlot({
+#par(mar=c(1,1,1,1))
+  par(mfrow=c(1,1))
+library(scales)
+library(plotly)
+p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(Assemblages))) +
+  geom_bar(position="stack", stat="identity") +#,stat="identity"
+  #geom_col(position = "fill") +#,stat="identity"
+  #geom_label( x=3.5, aes(y=labelPosition, label=label), size=6) +
+  #scale_fill_brewer(palette=4) +
+  scale_fill_manual(values = c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404'))+
+  #coord_polar(theta="y") +
+  #xlim(c(2, 4)) +
+  #theme_void() +
+  #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','South Coast RSMP','SC Footprint','127')),scales="free")+
+  #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','H Footprint','514/1')),scales="free")+
+  #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Anglian RSMP','A Footprint','240')),scales="free")+
+  facet_wrap(~factor(name),scales="free")+
+  theme(legend.position = "none")+
+  scale_y_continuous(labels = label_comma())
+
+p
+#ggplotly(p)
+})
+
+```
+
+
+```{r, fig.width = 12, fig.height= 5}
+library(ggplot2)
+knitr::opts_chunk$set(fig.width=unit(18,"cm"), fig.height=unit(11,"cm"))
+
+renderPlot({
+#par(mar=c(1,1,1,1))
+  par(mfrow=c(1,1))
+library(scales)
+library(plotly)
+p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(Assemblages))) +
+  geom_bar(position="stack", stat="identity") +#,stat="identity"
+  #geom_col(position = "fill") +#,stat="identity"
+  #geom_label( x=3.5, aes(y=labelPosition, label=label), size=6) +
+  #scale_fill_brewer(palette=4) +
+  scale_fill_manual(values = c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404'))+
+  #coord_polar(theta="y") +
+  #xlim(c(2, 4)) +
+  #theme_void() +
+  #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','South Coast RSMP','SC Footprint','127')),scales="free")+
+  #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','H Footprint','514/1')),scales="free")+
+  #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Anglian RSMP','A Footprint','240')),scales="free")+
+  facet_wrap(~factor(name),scales="free")+
+  theme(legend.position = "none")+
+  scale_y_continuous(labels = label_comma())
+
+p
+#ggplotly(p)
+})
+```
