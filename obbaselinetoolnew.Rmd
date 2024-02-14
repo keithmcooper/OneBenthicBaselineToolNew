@@ -661,7 +661,7 @@ agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extractio
 names(agg_region)[2] <- 'name'## Update col names so all polygon dfs have same names and can be joined
 #names(agg_region)
 #class(agg_region)
-View(agg_region)
+#View(agg_region)
 
 ## AGGREGATE SIZs
 agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
@@ -1032,6 +1032,48 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
 
 
 ggplotly(p)
+})
+```
+</div>
+
+<div style= "height:400px; width: 1000px">
+```{r}
+library(terra)
+library(ggplot2)
+library(tidyterra)
+
+library(terra)
+
+
+r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBiodiversityLayersApp/R/www/Assemblages.tif")
+agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;") 
+
+region_rast2 <- reactive({
+ 
+region_rast <-   agg_region[which(agg_region$stationsubgroup1 ==input$regionInput ),]#
+
+return(region_rast)
+})
+
+sel_rast_poly2 <- reactive({
+sel_rast_poly <- crop(r, region_rast2(), mask=TRUE)
+
+## Make cluster a factor
+values(sel_rast_poly) <- as.factor(values(sel_rast_poly))
+
+return(sel_rast_poly)
+})
+
+
+
+
+#plot(ang_region)
+# subset area using polygons
+renderPlot({
+
+ggplot() +
+  geom_spatraster(data =sel_rast_poly2())+#r_ang_region
+  scale_fill_manual(values = c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404','black'))
 })
 ```
 </div>
