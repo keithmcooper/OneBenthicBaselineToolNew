@@ -661,6 +661,7 @@ agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extractio
 names(agg_region)[2] <- 'name'## Update col names so all polygon dfs have same names and can be joined
 #names(agg_region)
 #class(agg_region)
+View(agg_region)
 
 ## AGGREGATE SIZs
 agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
@@ -771,12 +772,12 @@ colnames(agg_siz_nw4572)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_nw457_comb <- agg_siz_nw4572 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_nw457_comb$name <- 'EC Footprint'# add in missing cols
-agg_siz_nw457_comb$id <- 'EC Footprint'# add in missing cols
+agg_siz_nw457_comb$name <- 'NW(457) Footprint'# add in missing cols
+agg_siz_nw457_comb$id <- 'NW(457) Footprint'# add in missing cols
 agg_siz_nw457_comb$area_km2 <- ''# add in missing cols
 agg_siz_nw457_comb2 <- agg_siz_nw457_comb[,c(4,3,5,1)] # get cols in correct order
 
-## SIZ NW531
+## SIZ BC531
 agg_siz_bc531 <- agg_siz_all3%>%filter(region=='Bristol Channel (531)') # subset polygons for region
 agg_siz_bc5312 <- agg_siz_bc531[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
 colnames(agg_siz_bc5312)[2] <- 'name'# update col names
@@ -784,16 +785,94 @@ colnames(agg_siz_bc5312)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_bc531_comb <- agg_siz_bc5312 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_bc531_comb$name <- 'EC Footprint'# add in missing cols
-agg_siz_bc531_comb$id <- 'EC Footprint'# add in missing cols
+agg_siz_bc531_comb$name <- 'BC(531) Footprint'# add in missing cols
+agg_siz_bc531_comb$id <- 'BC(531) Footprint'# add in missing cols
 agg_siz_bc531_comb$area_km2 <- ''# add in missing cols
 agg_siz_bc531_comb2 <- agg_siz_bc531_comb[,c(4,3,5,1)] # get cols in correct order
 
+## SIZ BC476
+agg_siz_bc476 <- agg_siz_all3%>%filter(region=='Bristol Channel (476)') # subset polygons for region
+agg_siz_bc4762 <- agg_siz_bc476[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_bc4762)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_bc476_comb <- agg_siz_bc4762 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_bc476_comb$name <- 'BC(476) Footprint'# add in missing cols
+agg_siz_bc476_comb$id <- 'BC(476) Footprint'# add in missing cols
+agg_siz_bc476_comb$area_km2 <- ''# add in missing cols
+agg_siz_bc476_comb2 <- agg_siz_bc476_comb[,c(4,3,5,1)] # get cols in correct order
+
+## SIZ BC526
+agg_siz_bc526 <- agg_siz_all3%>%filter(region=='Bristol Channel (526)') # subset polygons for region
+agg_siz_bc5262 <- agg_siz_bc526[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_bc5262)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_bc526_comb <- agg_siz_bc5262 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_bc526_comb$name <- 'BC(526) Footprint'# add in missing cols
+agg_siz_bc526_comb$id <- 'BC(526) Footprint'# add in missing cols
+agg_siz_bc526_comb$area_km2 <- ''# add in missing cols
+agg_siz_bc526_comb2 <- agg_siz_bc526_comb[,c(4,3,5,1)] # get cols in correct order
+
+## SIZ GWS
+agg_siz_gws <- agg_siz_all3%>%filter(region=='Goodwin Sands RSMP') # subset polygons for region
+agg_siz_gws2 <- agg_siz_gws[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_gws2)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_gws_comb <- agg_siz_gws2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_gws_comb$name <- 'GWS Footprint'# add in missing cols
+agg_siz_gws_comb$id <- 'GWS Footprint'# add in missing cols
+agg_siz_gws_comb$area_km2 <- ''# add in missing cols
+agg_siz_gws_comb2 <- agg_siz_gws_comb[,c(4,3,5,1)] # get cols in correct order
+
+## SIZ HS
+agg_siz_hs <- agg_siz_all3%>%filter(region=='Hilbre Swash (Area 392_393)') # subset polygons for region
+agg_siz_hs2 <- agg_siz_hs[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_hs2)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_hs_comb <- agg_siz_hs2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_hs_comb$name <- 'HS Footprint'# add in missing cols
+agg_siz_hs_comb$id <- 'HS Footprint'# add in missing cols
+agg_siz_hs_comb$area_km2 <- ''# add in missing cols
+agg_siz_hs_comb2 <- agg_siz_hs_comb[,c(4,3,5,1)] # get cols in correct order
+
+## SIZ BC472
+agg_siz_bc472 <- agg_siz_all3%>%filter(region=='Bristol Channel (472)') # subset polygons for region
+agg_siz_bc4722 <- agg_siz_bc472[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_bc4722)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_bc472_comb <- agg_siz_bc4722 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_bc472_comb$name <- 'BC(472) Footprint'# add in missing cols
+agg_siz_bc472_comb$id <- 'BC(472) Footprint'# add in missing cols
+agg_siz_bc472_comb$area_km2 <- ''# add in missing cols
+agg_siz_bc472_comb2 <- agg_siz_bc472_comb[,c(4,3,5,1)] # get cols in correct order
+
+## SIZ BC455 459 Bedwyn
+agg_siz_bc455 <- agg_siz_all3%>%filter(region=='Bristol Channel (455, 459, Bedwyn)') # subset polygons for region
+agg_siz_bc4552 <- agg_siz_bc455[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
+colnames(agg_siz_bc4552)[2] <- 'name'# update col names
+#class(agg_siz_sc2)
+sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
+agg_siz_bc455_comb <- agg_siz_bc4552 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+#plot(agg_siz_sc_comb)
+agg_siz_bc455_comb$name <- 'BC(455, 459, Bedwyn) Footprint'# add in missing cols
+agg_siz_bc455_comb$id <- 'BC(455, 459, Bedwyn) Footprint'# add in missing cols
+agg_siz_bc455_comb$area_km2 <- ''# add in missing cols
+agg_siz_bc455_comb2 <- agg_siz_bc455_comb[,c(4,3,5,1)] # get cols in correct order
 #######
 #######
 
 ## Stich all polygons together
-all_poly <- rbind(raster_extent3,uk_eez3,agg_region,agg_siz3,agg_siz_hum_comb2,agg_siz_sc_comb2,agg_siz_ang_comb2, agg_siz_t_comb2,agg_siz_ec_comb2,agg_siz_nw457_comb2, agg_siz_bc531_comb2 )
+all_poly <- rbind(raster_extent3,uk_eez3,agg_region,agg_siz3,agg_siz_hum_comb2,agg_siz_sc_comb2,agg_siz_ang_comb2, agg_siz_t_comb2,agg_siz_ec_comb2,agg_siz_nw457_comb2,agg_siz_bc531_comb2,agg_siz_bc476_comb2,agg_siz_bc526_comb2,
+                  agg_siz_gws_comb2,agg_siz_hs_comb2,agg_siz_bc472_comb2,agg_siz_bc455_comb2 )
 #head(all_poly)
 #plot(all_poly)
 #all_poly <- poly
@@ -838,6 +917,28 @@ footprint <- reactive({
   return("H Footprint")
 } else if (input$regionInput == 'Anglian RSMP') {
   return("A Footprint")
+} else if (input$regionInput == 'Thames RSMP') {
+  return("T Footprint")
+} else if (input$regionInput == 'South Coast RSMP') {
+  return("SC Footprint")
+} else if (input$regionInput == 'East Channel RSMP') {
+  return("EC Footprint")
+} else if (input$regionInput == 'Bristol Channel (531)') {
+  return("BC(531) Footprint")
+} else if (input$regionInput == 'Bristol Channel (476)') {
+  return("BC(476) Footprint")
+}else if (input$regionInput == 'Bristol Channel (526)') {
+  return("BC(526) Footprint")
+}else if (input$regionInput == 'Goodwin Sands RSMP') {
+  return("GWS Footprint")
+}else if (input$regionInput == 'Hilbre Swash (Area 392_393)') {
+  return("HS Footprint")
+}else if (input$regionInput == 'North West (457)') {
+  return("NW(457) Footprint")
+}else if (input$regionInput == 'Bristol Channel (472)') {
+  return("BC(472) Footprint")
+}else if (input$regionInput == 'Bristol Channel (455, 459, Bedwyn)') {
+  return("BC(455, 459, Bedwyn) Footprint")
 }
 })
 ########################
@@ -884,7 +985,23 @@ return(selected_data2)
 <div style= "height:650px; width: 1000px">
 ```{r, fig.width = 12, fig.height=20}
 level_order2 <- reactive({
-level_order <- c('NW Europe','UK EEZ',unique(agg_region$name),'A Footprint','H Footprint' ,unique(agg_siz$area_numbe))
+level_order <- c('NW Europe',
+                 'UK EEZ',
+                 unique(agg_region$name),
+                 'A Footprint',
+                 'H Footprint' ,
+                 'T Footprint' ,
+                 'SC Footprint' ,
+                 'EC Footprint' ,
+                 'BC(531) Footprint' ,
+                 'BC(476) Footprint' ,
+                 'GWS Footprint' ,
+                 'HS Footprint' ,
+                 'NW(457) Footprint' ,
+                 'BC(526) Footprint' ,
+                 'BC(472) Footprint' ,
+                 'BC(455, 459, Bedwyn) Footprint' ,
+                 unique(agg_siz$area_numbe))
 return(level_order)
 })
 
