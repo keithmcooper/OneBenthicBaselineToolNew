@@ -1046,11 +1046,11 @@ library(terra)
 
 
 r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBiodiversityLayersApp/R/www/Assemblages.tif")
-agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;") 
+agg_region2 <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;") 
 
 region_rast2 <- reactive({
  
-region_rast <-   agg_region[which(agg_region$stationsubgroup1 ==input$regionInput ),]#
+region_rast <-   agg_region2[which(agg_region2$stationsubgroup1 ==input$regionInput ),]#
 
 return(region_rast)
 })
