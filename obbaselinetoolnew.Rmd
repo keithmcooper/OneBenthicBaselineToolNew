@@ -266,6 +266,20 @@ pal_phy <- colorFactor(
   domain = data$phycluster
 )
 
+############################
+## Agg region assemblage tif
+library(terra)
+assemblages2 <- rast('www/Assemblages.tif')
+crs(assemblages2) <- "+proj=longlat +datum=WGS84"
+agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")
+#plot(agg_region)
+
+
+r_agg_region <- crop(assemblages2, agg_region, mask=TRUE)
+#pal_anglian <- c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404')
+#plot(r_agg_region)
+############################
+
 ## Create map
 output$map1 <-renderLeaflet({
 leaflet() %>% 
@@ -290,6 +304,8 @@ leaflet() %>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
     addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages")%>%
+    addRasterImage(r_agg_region,col=pal,opacity = 1,project = 3857)%>%
+    
     ######################
   addLayersControl(
     overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
@@ -887,7 +903,7 @@ library(terra)
 
 # extract cluster by polygon
 example<-terra::extract(r,all_poly, ID=T)
-#head(example)
+
 ## Number of cells by cluster by poly
 example2 <- example%>%group_by(ID)%>%count(Assemblages)
 #head(example2)
