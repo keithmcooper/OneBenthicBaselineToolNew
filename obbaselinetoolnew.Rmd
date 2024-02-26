@@ -269,15 +269,22 @@ pal_phy <- colorFactor(
 ############################
 ## Agg region assemblage tif
 library(terra)
+library(leaflet)
 assemblages2 <- rast('www/Assemblages.tif')
-crs(assemblages2) <- "+proj=longlat +datum=WGS84"
+
+uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")#
+pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
+r_uk_eez <- crop(assemblages2,uk_eez, mask=TRUE)
+
+library(sf)
 agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")
-#plot(agg_region)
-
-
+pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
 r_agg_region <- crop(assemblages2, agg_region, mask=TRUE)
-#pal_anglian <- c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404')
-#plot(r_agg_region)
+
+agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
+pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
+r_agg_siz <- crop(assemblages2, agg_siz, mask=TRUE)
+
 ############################
 
 ## Create map
@@ -304,14 +311,20 @@ leaflet() %>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
     addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages")%>%
-    addRasterImage(r_agg_region,col=pal,opacity = 1,project = 3857)%>%
-    
+    addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Region")%>%
+     addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Footprint")%>%
+    addRasterImage(r_uk_eez,col=pal2,opacity = 1,project = 3857,group = "EEZ")%>%
     ######################
   addLayersControl(
-    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))%>%#
+    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"))%>%
   
   ###############################
+#   addLayersControl(
+#    overlayGroups = c("Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+# hideGroup(c("Region","Footprint"))%>%#
+  
+  ################################
     setView(0.54,55.53,zoom=5.3)%>%
     addMouseCoordinates()
 })
@@ -345,9 +358,14 @@ observeEvent(  input$siteInput,{
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
-    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa"))#
-
+    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"))#
+#######################
+#       addLayersControl(
+#    overlayGroups = c("Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+# hideGroup(c("Region","Footprint"))#
+    
+    ####################
   }
   })
 
@@ -656,7 +674,7 @@ raster_extent3 <- st_cast(raster_extent2, "POLYGON")# convert from multipolygon 
 #names(raster_extent3)
 #class(raster_extent3)
 #head(raster_extent3)
-raster_extent3$name <- 'NW Europe'
+raster_extent3$name <- 'Assemblages'
 
 ## UK EEZ
 uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")# Read in data
@@ -668,7 +686,7 @@ names(uk_eez2)[3] <- 'area_km2'# Update col names so all polygon dfs have same n
 uk_eez3 <- st_cast(uk_eez2, "POLYGON")# convert from multipolygon to polygon
 #names(uk_eez3)
 ##class(uk_eez3)
-uk_eez3$name <- 'UK EEZ'
+uk_eez3$name <- 'EEZ'
 
 ## AGGREGATE REGIONS
 agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")# Read in data
@@ -961,8 +979,8 @@ footprint <- reactive({
 
 
 selected_data3 <- reactive({
-selected_data <- merge_test[which(merge_test$name=='NW Europe'|
-                                    merge_test$name=='UK EEZ'|
+selected_data <- merge_test[which(merge_test$name=='Assemblages'|
+                                    merge_test$name=='EEZ'|
                                     merge_test$name==input$regionInput|
                                     merge_test$name==footprint()|
                                     merge_test$name==input$siteInput),]#|merge_test$name==input$regionInput|merge_test$name==input$siteInput|merge_test$name=='A Footprint'
@@ -1001,8 +1019,8 @@ return(selected_data2)
 <div style= "height:650px; width: 1000px">
 ```{r, fig.width = 12, fig.height=20}
 level_order2 <- reactive({
-level_order <- c('NW Europe',
-                 'UK EEZ',
+level_order <- c('Assemblages',
+                 'EEZ',
                  unique(agg_region$name),
                  'A Footprint',
                  'H Footprint' ,
@@ -1052,44 +1070,4 @@ ggplotly(p)
 ```
 </div>
 
-<div style= "height:400px; width: 1000px">
-```{r}
-library(terra)
-library(ggplot2)
-library(tidyterra)
 
-library(terra)
-
-
-r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBiodiversityLayersApp/R/www/Assemblages.tif")
-agg_region2 <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;") 
-
-region_rast2 <- reactive({
- 
-region_rast <-   agg_region2[which(agg_region2$stationsubgroup1 ==input$regionInput ),]#
-
-return(region_rast)
-})
-
-sel_rast_poly2 <- reactive({
-sel_rast_poly <- crop(r, region_rast2(), mask=TRUE)
-
-## Make cluster a factor
-values(sel_rast_poly) <- as.factor(values(sel_rast_poly))
-
-return(sel_rast_poly)
-})
-
-
-
-
-#plot(ang_region)
-# subset area using polygons
-renderPlot({
-
-ggplot() +
-  geom_spatraster(data =sel_rast_poly2())+#r_ang_region
-  scale_fill_manual(values = c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404','black'))
-})
-```
-</div>
