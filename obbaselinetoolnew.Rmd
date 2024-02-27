@@ -244,10 +244,15 @@ Column {data-width=500}
 ### Map
 
 ```{r}
-
+library(terra)
+library(raster)
 ## Bring in assemblage tif
-assemblages <- raster('www/Assemblages.tif')
-#assemblages<- raster("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBiodiversityLayersApp/R/www/Assemblages.tif")
+#assemblages <- rast('www/AssemblageMaxClass_Apr22.tif')
+#assemblages.agg <- aggregate(assemblages, fact=2,fun = modal)
+#writeRaster(assemblages.agg,'www/AssemblageMaxClass_Apr22_agg.tif',overwrite=TRUE)#format = "GTiff",
+assemblages<- raster('www/AssemblageMaxClass_Apr22_agg.tif')
+#Assemblages = ratify(r)
+#########
 
 ## Colour palette for assemblage raster
 #assemcol <-c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404')# full colour
@@ -270,7 +275,7 @@ pal_phy <- colorFactor(
 ## Agg region assemblage tif
 library(terra)
 library(leaflet)
-assemblages2 <- rast('www/Assemblages.tif')
+assemblages2 <- rast('www/AssemblageMaxClass_Apr22_agg.tif')
 
 uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")#
 pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
@@ -310,14 +315,14 @@ leaflet() %>%
     addPolygons(data=sac,color = "#444444", weight = 1, smoothFactor = 0.5,group = "sac",popup = paste0("<b>Name: </b>", sac$site_name))%>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
-    addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages")%>%
-    addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Region")%>%
-     addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Footprint")%>%
-    addRasterImage(r_uk_eez,col=pal2,opacity = 1,project = 3857,group = "EEZ")%>%
+    addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages (All)")%>%
+    addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Assemblages (RSMP Region)")%>%
+     addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
+    addRasterImage(r_uk_eez,col=pal2,opacity = 1,project = 3857,group = "Assemblages (EEZ)")%>%
     ######################
   addLayersControl(
-    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"))%>%
+    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"))%>%
   
   ###############################
 #   addLayersControl(
@@ -358,8 +363,8 @@ observeEvent(  input$siteInput,{
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
-    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages","EEZ","Region","Footprint"))#
+    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
+    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"))#
 #######################
 #       addLayersControl(
 #    overlayGroups = c("Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
@@ -461,7 +466,11 @@ map_overlays <- data.frame(
                "oga",
                "mcz",
                "sac",
-               "ncmpa"),
+               "ncmpa",
+    'Assemblages (All)',
+     'Assemblages (EEZ)',
+     'Assemblages (RSMP Region)',
+     'Assemblages (Footprint)'),
   Link=c(
     "NA",
     "NA",
@@ -512,7 +521,11 @@ map_overlays <- data.frame(
       >Special Area of Conservation (SAC)</a></p>',
     
          '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
-      >Nature Conservation Marine Protected Areas (Scotland)</a></p>'),
+      >Nature Conservation Marine Protected Areas (Scotland)</a></p>',
+     'NA',
+     'NA',
+     'NA',
+     'NA'),
   
   Description=c("Faunal cluster group for selected stations (see Cooper and Barry (2017) for details).",
     "Physical cluster group for selected stations (see Cooper and Barry (2017) for details).",
@@ -534,7 +547,11 @@ map_overlays <- data.frame(
           "OGA Licences WGS84, Oil and Gas Authority",
           "Marine Conservation Zones (MCZ)",
           "Special Area of Conservation (SAC)",
-          "Nature Conservation Marine Protected Areas (Scotland)"))
+          "Nature Conservation Marine Protected Areas (Scotland)",
+     'full extent of benthic assemblage model',
+     'area of UK EEZ covered by the assemblage model',
+     'polygon covering all licences',
+     'area of seabed covered by all regional primary and secondary impact zones (PIZs/SIZs)'))
 
 
 ## Create a table for map overlays
@@ -657,7 +674,9 @@ pool <- dbPool(drv = dbDriver(dw$driver),
 #r_agg_region <- crop(r, agg_region, mask=TRUE)
 ## Load raster and vector layers
 library(terra)
-r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBiodiversityLayersApp/R/www/Assemblages.tif")
+#r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBaselineToolNew/R/www/Assemblages.tif")#
+r <- rast("www/AssemblageMaxClass_Apr22_agg.tif")
+#r <- rast('www/AssemblageMaxClass_Apr22.tif')
 #r <- round(r/100)
 
 ###############
@@ -674,7 +693,7 @@ raster_extent3 <- st_cast(raster_extent2, "POLYGON")# convert from multipolygon 
 #names(raster_extent3)
 #class(raster_extent3)
 #head(raster_extent3)
-raster_extent3$name <- 'Assemblages'
+raster_extent3$name <- 'All'
 
 ## UK EEZ
 uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")# Read in data
@@ -731,8 +750,8 @@ colnames(agg_siz_hum2)[2] <- 'name'# update col names
 #class(agg_siz_hum2)
 agg_siz_hum_comb <- agg_siz_hum2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_hum_comb)
-agg_siz_hum_comb$name <- 'Footprint (Humber)'# add in missing cols
-agg_siz_hum_comb$id <- 'Footprint (Humber)'# add in missing cols
+agg_siz_hum_comb$name <- 'Humber Footprint'# add in missing cols
+agg_siz_hum_comb$id <- 'Humber Footprint'# add in missing cols
 agg_siz_hum_comb$area_km2 <- ''# add in missing cols
 agg_siz_hum_comb2 <- agg_siz_hum_comb[,c(4,3,5,1)] # get cols in correct order
 #agg_siz_hum_comb2 # check order
@@ -746,8 +765,8 @@ colnames(agg_siz_ang2)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_ang_comb <- agg_siz_ang2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_ang_comb)
-agg_siz_ang_comb$name <- 'Footprint (Anglian)'# add in missing cols
-agg_siz_ang_comb$id <- 'Footprint (Anglian)'# add in missing cols
+agg_siz_ang_comb$name <- 'Anglian Footprint'# add in missing cols
+agg_siz_ang_comb$id <- 'Anglian Footprint'# add in missing cols
 agg_siz_ang_comb$area_km2 <- ''# add in missing cols
 agg_siz_ang_comb2 <- agg_siz_ang_comb[,c(4,3,5,1)] # get cols in correct order
 #agg_siz_ang_comb2 # check order
@@ -761,8 +780,8 @@ colnames(agg_siz_t2)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_t_comb <- agg_siz_t2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_t_comb$name <- 'Footprint (Thames)'# add in missing cols
-agg_siz_t_comb$id <- 'Footprint (Thames)'# add in missing cols
+agg_siz_t_comb$name <- 'Thames Footprint'# add in missing cols
+agg_siz_t_comb$id <- 'Thames Footprint'# add in missing cols
 agg_siz_t_comb$area_km2 <- ''# add in missing cols
 agg_siz_t_comb2 <- agg_siz_t_comb[,c(4,3,5,1)] # get cols in correct order
 #agg_siz_sc_comb2 # check order
@@ -776,8 +795,8 @@ colnames(agg_siz_sc2)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_sc_comb <- agg_siz_sc2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_sc_comb$name <- 'Footprint (South Coast)'# add in missing cols
-agg_siz_sc_comb$id <- 'Footprint (South Coast)'# add in missing cols
+agg_siz_sc_comb$name <- 'South Coast Footprint'# add in missing cols
+agg_siz_sc_comb$id <- 'South Coast Footprint'# add in missing cols
 agg_siz_sc_comb$area_km2 <- ''# add in missing cols
 agg_siz_sc_comb2 <- agg_siz_sc_comb[,c(4,3,5,1)] # get cols in correct order
 #agg_siz_sc_comb2 # check order
@@ -791,8 +810,8 @@ colnames(agg_siz_ec2)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_ec_comb <- agg_siz_ec2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_ec_comb$name <- 'Footprint (East Channel)'# add in missing cols
-agg_siz_ec_comb$id <- 'Footprint (East Channel)'# add in missing cols
+agg_siz_ec_comb$name <- 'East Channel Footprint'# add in missing cols
+agg_siz_ec_comb$id <- 'East Channel Footprint'# add in missing cols
 agg_siz_ec_comb$area_km2 <- ''# add in missing cols
 agg_siz_ec_comb2 <- agg_siz_ec_comb[,c(4,3,5,1)] # get cols in correct order
 #agg_siz_sc_comb2 # check order
@@ -806,8 +825,8 @@ colnames(agg_siz_nw4572)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_nw457_comb <- agg_siz_nw4572 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_nw457_comb$name <- 'Footprint (NW 457)'# add in missing cols
-agg_siz_nw457_comb$id <- 'Footprint (NW 457)'# add in missing cols
+agg_siz_nw457_comb$name <- 'North West (457) Footprint'# add in missing cols
+agg_siz_nw457_comb$id <- 'North West (457) Footprint'# add in missing cols
 agg_siz_nw457_comb$area_km2 <- ''# add in missing cols
 agg_siz_nw457_comb2 <- agg_siz_nw457_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -819,8 +838,8 @@ colnames(agg_siz_bc5312)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_bc531_comb <- agg_siz_bc5312 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_bc531_comb$name <- 'Footprint (BC 531)'# add in missing cols
-agg_siz_bc531_comb$id <- 'Footprint (BC 531)'# add in missing cols
+agg_siz_bc531_comb$name <- 'Bristol Channel (531) Footprint'# add in missing cols
+agg_siz_bc531_comb$id <- 'Bristol Channel (531) Footprint'# add in missing cols
 agg_siz_bc531_comb$area_km2 <- ''# add in missing cols
 agg_siz_bc531_comb2 <- agg_siz_bc531_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -832,8 +851,8 @@ colnames(agg_siz_bc4762)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_bc476_comb <- agg_siz_bc4762 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_bc476_comb$name <- 'Footprint (BC 476)'# add in missing cols
-agg_siz_bc476_comb$id <- 'Footprint (BC 476)'# add in missing cols
+agg_siz_bc476_comb$name <- 'Bristol Channel (476) Footprint'# add in missing cols
+agg_siz_bc476_comb$id <- 'Bristol Channel (476) Footprint'# add in missing cols
 agg_siz_bc476_comb$area_km2 <- ''# add in missing cols
 agg_siz_bc476_comb2 <- agg_siz_bc476_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -845,8 +864,8 @@ colnames(agg_siz_bc5262)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_bc526_comb <- agg_siz_bc5262 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_bc526_comb$name <- 'Footprint (BC 526)'# add in missing cols
-agg_siz_bc526_comb$id <- 'Footprint (BC 526)'# add in missing cols
+agg_siz_bc526_comb$name <- 'Bristol Channel (526) Footprint'# add in missing cols
+agg_siz_bc526_comb$id <- 'Bristol Channel (526) Footprint'# add in missing cols
 agg_siz_bc526_comb$area_km2 <- ''# add in missing cols
 agg_siz_bc526_comb2 <- agg_siz_bc526_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -858,8 +877,8 @@ colnames(agg_siz_gws2)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_gws_comb <- agg_siz_gws2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_gws_comb$name <- 'Footprint (Goodwin Sands)'# add in missing cols
-agg_siz_gws_comb$id <- 'Footprint (Goodwin Sands)'# add in missing cols
+agg_siz_gws_comb$name <- 'Goodwin Sands Footprint'# add in missing cols
+agg_siz_gws_comb$id <- 'Goodwin Sands Footprint'# add in missing cols
 agg_siz_gws_comb$area_km2 <- ''# add in missing cols
 agg_siz_gws_comb2 <- agg_siz_gws_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -871,8 +890,8 @@ colnames(agg_siz_hs2)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_hs_comb <- agg_siz_hs2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_hs_comb$name <- 'Footprint (Hilbre Swash)'# add in missing cols
-agg_siz_hs_comb$id <- 'Footprint (Hilbre Swash)'# add in missing cols
+agg_siz_hs_comb$name <- 'Hilbre Swash (Area 392, 393) Footprint'# add in missing cols
+agg_siz_hs_comb$id <- 'Hilbre Swash (Area 392, 393) Footprint'# add in missing cols
 agg_siz_hs_comb$area_km2 <- ''# add in missing cols
 agg_siz_hs_comb2 <- agg_siz_hs_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -884,8 +903,8 @@ colnames(agg_siz_bc4722)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_bc472_comb <- agg_siz_bc4722 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_bc472_comb$name <- 'Footprint (BC 472)'# add in missing cols
-agg_siz_bc472_comb$id <- 'Footprint (BC 472)'# add in missing cols
+agg_siz_bc472_comb$name <- 'Bristol Channel (472) Footprint'# add in missing cols
+agg_siz_bc472_comb$id <- 'Bristol Channel (472) Footprint'# add in missing cols
 agg_siz_bc472_comb$area_km2 <- ''# add in missing cols
 agg_siz_bc472_comb2 <- agg_siz_bc472_comb[,c(4,3,5,1)] # get cols in correct order
 
@@ -897,14 +916,14 @@ colnames(agg_siz_bc4552)[2] <- 'name'# update col names
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
 agg_siz_bc455_comb <- agg_siz_bc4552 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
-agg_siz_bc455_comb$name <- 'Footprint (BC 455/459/Bedwyn)'# add in missing cols
-agg_siz_bc455_comb$id <- 'Footprint (BC 455/459/Bedwyn)'# add in missing cols
+agg_siz_bc455_comb$name <- 'Bristol Channel (455, 459, Bedwyn) Footprint'# add in missing cols
+agg_siz_bc455_comb$id <- 'Bristol Channel (455, 459, Bedwyn) Footprint'# add in missing cols
 agg_siz_bc455_comb$area_km2 <- ''# add in missing cols
 agg_siz_bc455_comb2 <- agg_siz_bc455_comb[,c(4,3,5,1)] # get cols in correct order
 #######
 #######
 
-## Stich all polygons together
+## Stitch all polygons together
 all_poly <- rbind(raster_extent3,uk_eez3,agg_region,agg_siz3,agg_siz_hum_comb2,agg_siz_sc_comb2,agg_siz_ang_comb2, agg_siz_t_comb2,agg_siz_ec_comb2,agg_siz_nw457_comb2,agg_siz_bc531_comb2,agg_siz_bc476_comb2,agg_siz_bc526_comb2,
                   agg_siz_gws_comb2,agg_siz_hs_comb2,agg_siz_bc472_comb2,agg_siz_bc455_comb2 )
 #head(all_poly)
@@ -948,38 +967,38 @@ merge_test <- merge(example3,all_poly_names2, by='ID')
 
 footprint <- reactive({
   if (input$regionInput == 'Humber RSMP') {
-  return("Footprint (Humber)")
+  return("Humber Footprint")
 } else if (input$regionInput == 'Anglian RSMP') {
-  return("Footprint (Anglian)")
+  return("Anglian Footprint")
 } else if (input$regionInput == 'Thames RSMP') {
-  return("Footprint (Thames)")
+  return("Thames Footprint")
 } else if (input$regionInput == 'South Coast RSMP') {
-  return("Footprint (South Coast)")
+  return("South Coast Footprint")
 } else if (input$regionInput == 'East Channel RSMP') {
-  return("Footprint (East Channel)")
+  return("East Channel Footprint")
 } else if (input$regionInput == 'Bristol Channel (531)') {
-  return("Footprint (BC 531)")
+  return("Bristol Channel (531) Footprint")
 } else if (input$regionInput == 'Bristol Channel (476)') {
-  return("Footprint (BC 476)")
+  return("Bristol Channel (476) Footprint")
 }else if (input$regionInput == 'Bristol Channel (526)') {
-  return("Footprint (BC 526)")
+  return("Bristol Channel (526) Footprint")
 }else if (input$regionInput == 'Goodwin Sands RSMP') {
-  return("Footprint (Goodwin Sands)")
+  return("Goodwin Sands Footprint")
 }else if (input$regionInput == 'Hilbre Swash (Area 392_393)') {
-  return("Footprint (Hilbre Swash)")
+  return("Hilbre Swash (Area 392, 393) Footprint")
 }else if (input$regionInput == 'North West (457)') {
-  return("Footprint (NW 457)")
+  return("North West (457) Footprint")
 }else if (input$regionInput == 'Bristol Channel (472)') {
-  return("Footprint (BC 472)")
+  return("Bristol Channel (472) Footprint")
 }else if (input$regionInput == 'Bristol Channel (455, 459, Bedwyn)') {
-  return("Footprint (BC 455/459/Bedwyn)")
+  return("Bristol Channel (455, 459, Bedwyn) Footprint")
 }
 })
 ########################
 
 
 selected_data3 <- reactive({
-selected_data <- merge_test[which(merge_test$name=='Assemblages'|
+selected_data <- merge_test[which(merge_test$name=='All'|
                                     merge_test$name=='EEZ'|
                                     merge_test$name==input$regionInput|
                                     merge_test$name==footprint()|
@@ -1031,28 +1050,38 @@ return(selected_data2)
 
 ```
 
-<div style= "height:650px; width: 1000px">
+<div style= "height:620px; width: 750px">
 ```{r, fig.width = 12, fig.height=20}
 level_order2 <- reactive({
-level_order <- c('Assemblages',
+level_order <- c('All',
                  'EEZ',
                  unique(agg_region$name),
-                 'Footprint (Anglian)',
-                 'Footprint (Humber)' ,
-                 'Footprint (Thames)' ,
-                 'Footprint (South Coast)' ,
-                 'Footprint (East Channel)' ,
-                 'Footprint (BC 531)' ,
-                 'Footprint (BC 476)' ,
-                 'Footprint (Goodwin Sands)' ,
-                 'Footprint (Hilbre Swash)' ,
-                 'Footprint (NW 457)' ,
-                 'Footprint (BC 526)' ,
-                 'Footprint (BC 472)' ,
-                 'Footprint (BC 455/459/Bedwyn)' ,
+                 'Anglian Footprint',
+                 'Humber Footprint',
+                 'Thames Footprint',
+                 'South Coast Footprint',
+                 'East Channel Footprint',
+                 'Bristol Channel (531) Footprint',
+                 'Bristol Channel (476) Footprint',
+                 'Goodwin Sands Footprint',
+                 'Hilbre Swash (Area 392, 393) Footprint',
+                 'North West (457) Footprint',
+                 'Bristol Channel (526) Footprint',
+                 'Bristol Channel (472) Footprint',
+                 'Bristol Channel (455, 459, Bedwyn) Footprint',
                  unique(agg_siz$area_numbe))
 return(level_order)
 })
+
+p('The plots below show the area of seabed covered by different benthic faunal assemblages at a variety of spatial scales including:')
+#br()
+p('i) ',tags$b('All'), ' - full extent of benthic assemblage model,') 
+p('ii) ',tags$b('EEZ'),' - area of UK EEZ covered by the assemblage model,') 
+p('iii) ',tags$b('RSMP Region'),' - polygon covering all licences,') 
+p('iv) ',tags$b('Footprint'),' - area of seabed covered by all regional primary and secondary impact zones (PIZs/SIZs), and')
+p('v) ',tags$b('Dredging Site'), '- footprint of potential dredging effect (PIZ and SIZ) for selected site.')
+#br() 
+p("Charts should be viewed together with the relevant associated map layers: Assemblages (All), Assemblages (EEZ), Assemblages (RSMP Region) and Assemblages (Footprint). These layers can be toggled on/off in the map window. Note the faunal identity of individual samples (map layers: 'selected (fauna)' and 'All (fauna)') may sometimes differ to that of the underlying model. This is expected and consistent with the notion that all models are imperfect.")
 
 renderPlotly({
 #par(mar=c(1,1,1,1))
@@ -1064,7 +1093,8 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
   #geom_col(position = "fill") +#,stat="identity"
   #geom_label( x=3.5, aes(y=labelPosition, label=label), size=6) +
   #scale_fill_brewer(palette=4) +
-  scale_fill_manual(values = c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404'))+
+  #Scale_fill_manual(values = c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404'))+
+  scale_fill_manual(values = c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A"))+# muted colours
   #coord_polar(theta="y") +
   #xlim(c(2, 4)) +
   #theme_void() +
@@ -1073,8 +1103,9 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
   #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','Anglian RSMP','North West (457)','Bristol Channel (531)','H Footprint','A Footprint','240','514/1','127','1804/1','1805')),scales="free")+
  facet_wrap(~factor(name,levels=level_order2()),scales="free")+
   theme(legend.position = "none",
-        plot.margin = margin(1, 1, 1,1, "cm"),
+        plot.margin = margin(0, 00, 0,0, "cm"),
         axis.title=element_text(size=10))+#,face="bold"
+  theme(text=element_text(size=10))+
   xlab("Assemblage")+
   ylab("Area (km2)")+
   scale_y_continuous(labels = label_comma())+
@@ -1083,6 +1114,8 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
 
 ggplotly(p)
 })
+
+
 ```
 </div>
 
