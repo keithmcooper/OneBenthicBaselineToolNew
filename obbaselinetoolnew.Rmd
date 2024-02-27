@@ -246,6 +246,11 @@ Column {data-width=500}
 ```{r}
 library(terra)
 library(raster)
+library(sf)
+## AGGREGATE REGIONS
+addPolylines <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")# Read in data
+
+
 ## Bring in assemblage tif
 #assemblages <- rast('www/AssemblageMaxClass_Apr22.tif')
 #assemblages.agg <- aggregate(assemblages, fact=2,fun = modal)
@@ -315,6 +320,7 @@ leaflet() %>%
     addPolygons(data=sac,color = "#444444", weight = 1, smoothFactor = 0.5,group = "sac",popup = paste0("<b>Name: </b>", sac$site_name))%>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
+    addPolygons(data=agg_region,color = "#444444", weight = 1,fillOpacity = 0.01, smoothFactor = 0.5,group = "Assemblages (RSMP Region)")%>%#,popup = paste0("<b>Name: </b>", agg_region$stationsubgroup1)
     addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages (All)")%>%
     addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Assemblages (RSMP Region)")%>%
      addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
@@ -678,7 +684,7 @@ library(terra)
 r <- rast("www/AssemblageMaxClass_Apr22_agg.tif")
 #r <- rast('www/AssemblageMaxClass_Apr22.tif')
 #r <- round(r/100)
-
+names(r) <- 'Assemblages'
 ###############
 
 ## RASTER EXTENT
