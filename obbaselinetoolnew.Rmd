@@ -1113,7 +1113,7 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
         axis.title=element_text(size=10))+#,face="bold"
   theme(text=element_text(size=10))+
   xlab("Assemblage")+
-  ylab("Area (km2)")+
+  ylab("Area")+
   scale_y_continuous(labels = label_comma())+
   theme(axis.text.x = element_text(angle = 90))#, vjust = 0.5, hjust=1
 
