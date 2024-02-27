@@ -986,6 +986,21 @@ selected_data <- merge_test[which(merge_test$name=='Assemblages'|
                                     merge_test$name==input$siteInput),]#|merge_test$name==input$regionInput|merge_test$name==input$siteInput|merge_test$name=='A Footprint'
 #head(selected_data)
 selected_data2 <- selected_data%>%group_by(ID)%>%mutate(sum=sum(n),perc=n/(sum(n))*100)
+##################
+
+selected_data2$Assemblages[selected_data2$Assemblages == 1] <- 'A1'
+selected_data2$Assemblages[selected_data2$Assemblages == 2] <- 'A2a'
+selected_data2$Assemblages[selected_data2$Assemblages == 3] <- 'A2b'
+selected_data2$Assemblages[selected_data2$Assemblages == 4] <- 'B1a'
+selected_data2$Assemblages[selected_data2$Assemblages == 5] <- 'C1a'
+selected_data2$Assemblages[selected_data2$Assemblages == 6] <- 'C1b'
+selected_data2$Assemblages[selected_data2$Assemblages == 7] <- 'D1'
+selected_data2$Assemblages[selected_data2$Assemblages == 8] <- 'D2a'
+selected_data2$Assemblages[selected_data2$Assemblages == 9] <- 'D2b'
+selected_data2$Assemblages[selected_data2$Assemblages == 10] <- 'D2c'
+selected_data2$Assemblages[selected_data2$Assemblages == 11] <- 'D2d'
+
+#################
 return(selected_data2)
 })
 
@@ -1027,14 +1042,14 @@ level_order <- c('Assemblages',
                  'Footprint (Thames)' ,
                  'Footprint (South Coast)' ,
                  'Footprint (East Channel)' ,
-                 'BC(531) Footprint' ,
-                 'BC(476) Footprint' ,
-                 'GWS Footprint' ,
-                 'HS Footprint' ,
-                 'NW(457) Footprint' ,
-                 'BC(526) Footprint' ,
-                 'BC(472) Footprint' ,
-                 'BC(455, 459, Bedwyn) Footprint' ,
+                 'Footprint (BC 531)' ,
+                 'Footprint (BC 476)' ,
+                 'Footprint (Goodwin Sands)' ,
+                 'Footprint (Hilbre Swash)' ,
+                 'Footprint (NW 457)' ,
+                 'Footprint (BC 526)' ,
+                 'Footprint (BC 472)' ,
+                 'Footprint (BC 455/459/Bedwyn)' ,
                  unique(agg_siz$area_numbe))
 return(level_order)
 })
@@ -1062,7 +1077,8 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
         axis.title=element_text(size=10))+#,face="bold"
   xlab("Assemblage")+
   ylab("Area (km2)")+
-  scale_y_continuous(labels = label_comma())
+  scale_y_continuous(labels = label_comma())+
+  theme(axis.text.x = element_text(angle = 90))#, vjust = 0.5, hjust=1
 
 
 ggplotly(p)
