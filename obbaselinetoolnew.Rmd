@@ -250,12 +250,15 @@ library(sf)
 ## AGGREGATE REGIONS
 addPolylines <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")# Read in data
 
-
+assemblages <- raster('www/Assemblages.tif')
+assemblages = ratify(assemblages)
 ## Bring in assemblage tif
-#assemblages <- rast('www/AssemblageMaxClass_Apr22.tif')
+#r <- raster('www/AssemblageMaxClass_Apr22.tif')
+#assemblages = ratify(r)
 #assemblages.agg <- aggregate(assemblages, fact=2,fun = modal)
+#assemblages<-terra::aggregate(r, fact = 2, fun = "modal", na.rm = TRUE)#
 #writeRaster(assemblages.agg,'www/AssemblageMaxClass_Apr22_agg.tif',overwrite=TRUE)#format = "GTiff",
-assemblages<- raster('www/AssemblageMaxClass_Apr22_agg.tif')
+#assemblages<- raster('www/AssemblageMaxClass_Apr22_agg.tif')
 #Assemblages = ratify(r)
 #########
 
@@ -280,20 +283,23 @@ pal_phy <- colorFactor(
 ## Agg region assemblage tif
 library(terra)
 library(leaflet)
-assemblages2 <- rast('www/AssemblageMaxClass_Apr22_agg.tif')
+#assemblages2 <- rast('www/Assemblages.tif')
+#assemblages2 = ratify(assemblages)
+#assemblages2 = assemblages
 
 uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")#
-pal2 <- c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404')
-r_uk_eez <- crop(assemblages2,uk_eez, mask=TRUE)
+pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
+r_uk_eez <- mask(assemblages,uk_eez)
 
 library(sf)
 agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")
 #pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
-r_agg_region <- crop(assemblages2, agg_region, mask=TRUE)
+r_agg_region <- mask(assemblages, agg_region)
 
-agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
-#pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
-r_agg_siz <- crop(assemblages2, agg_siz, mask=TRUE)
+## Can't show SIZs footprint as raster has areas of corrupted data
+#agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
+
+#r_agg_siz <- mask(assemblages, agg_siz)
 
 ############################
 
@@ -323,7 +329,7 @@ leaflet() %>%
     addPolygons(data=agg_region,color = "#444444", weight = 1,fillOpacity = 0.01, smoothFactor = 0.5,group = "Assemblages (RSMP Region)")%>%#,popup = paste0("<b>Name: </b>", agg_region$stationsubgroup1)
     addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages (All)")%>%
     addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Assemblages (RSMP Region)")%>%
-     addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
+     #addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
     addRasterImage(r_uk_eez,col=pal2,opacity = 1,project = 3857,group = "Assemblages (EEZ)")%>%
     ######################
   addLayersControl(
@@ -369,8 +375,8 @@ observeEvent(  input$siteInput,{
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
-    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"))#
+    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"),options = layersControlOptions(collapsed = FALSE))%>%#,"Assemblages (Footprint)"
+    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"))#,"Assemblages (Footprint)"
 #######################
 #       addLayersControl(
 #    overlayGroups = c("Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
@@ -475,8 +481,9 @@ map_overlays <- data.frame(
                "ncmpa",
     'Assemblages (All)',
      'Assemblages (EEZ)',
-     'Assemblages (RSMP Region)',
-     'Assemblages (Footprint)'),
+     'Assemblages (RSMP Region)'#,
+     #'Assemblages (Footprint)'
+    ),
   Link=c(
     "NA",
     "NA",
@@ -528,10 +535,16 @@ map_overlays <- data.frame(
     
          '<p><a href="https://hub.jncc.gov.uk/assets/ade43f34-54d6-4084-b66a-64f0b4a5ef27"
       >Nature Conservation Marine Protected Areas (Scotland)</a></p>',
-     'NA',
-     'NA',
-     'NA',
-     'NA'),
+     
+     '<p><a href="https://www.marinedataexchange.co.uk/details/TCE-3573/2022-the-crown-estate-de-rijke-noordzee-cefas-flanders-marine-institute-offshore-wind-evidence-and-change-programme-north-sea-net-gain-project/summary"
+      >Cooper, K. M., Downie, A.-L. and Curtis, M. (2022). North Sea Net Gain (NSNG). Cefas Project Report for The Crown Estate, 57 pp. Access the report</a></p>',
+     
+     '<p><a href="https://www.marinedataexchange.co.uk/details/TCE-3573/2022-the-crown-estate-de-rijke-noordzee-cefas-flanders-marine-institute-offshore-wind-evidence-and-change-programme-north-sea-net-gain-project/summary"
+      >Cooper, K. M., Downie, A.-L. and Curtis, M. (2022). North Sea Net Gain (NSNG). Cefas Project Report for The Crown Estate, 57 pp. Access the report</a></p>',
+     
+     '<p><a href="https://www.marinedataexchange.co.uk/details/TCE-3573/2022-the-crown-estate-de-rijke-noordzee-cefas-flanders-marine-institute-offshore-wind-evidence-and-change-programme-north-sea-net-gain-project/summary"
+      >Cooper, K. M., Downie, A.-L. and Curtis, M. (2022). North Sea Net Gain (NSNG). Cefas Project Report for The Crown Estate, 57 pp. Access the report</a></p>'
+    ),
   
   Description=c("Faunal cluster group for selected stations (see Cooper and Barry (2017) for details).",
     "Physical cluster group for selected stations (see Cooper and Barry (2017) for details).",
@@ -556,8 +569,9 @@ map_overlays <- data.frame(
           "Nature Conservation Marine Protected Areas (Scotland)",
      'full extent of benthic assemblage model',
      'area of UK EEZ covered by the assemblage model',
-     'polygon covering all licences',
-     'area of seabed covered by all regional primary and secondary impact zones (PIZs/SIZs)'))
+     'polygon covering all licences'#,
+     #'area of seabed covered by all regional primary and secondary impact zones (PIZs/SIZs)'
+    ))
 
 
 ## Create a table for map overlays
@@ -681,7 +695,7 @@ pool <- dbPool(drv = dbDriver(dw$driver),
 ## Load raster and vector layers
 library(terra)
 #r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBaselineToolNew/R/www/Assemblages.tif")#
-r <- rast("www/AssemblageMaxClass_Apr22_agg.tif")#_agg
+r <- rast("www/Assemblages.tif")#_agg
 #r <- rast('www/AssemblageMaxClass_Apr22.tif')
 #r <- round(r/100)
 names(r) <- 'Assemblages'
@@ -1079,7 +1093,7 @@ level_order <- c('All',
 return(level_order)
 })
 
-p('The plots below show the area of seabed covered by different benthic faunal assemblages at a variety of spatial scales including:')
+p('The charts below show the area of seabed covered by different benthic faunal assemblages at a variety of spatial scales including:')
 #br()
 p('i) ',tags$b('All'), ' - full extent of benthic assemblage model,') 
 p('ii) ',tags$b('EEZ'),' - area of UK EEZ covered by the assemblage model,') 
@@ -1087,7 +1101,7 @@ p('iii) ',tags$b('RSMP Region'),' - polygon covering all licences,')
 p('iv) ',tags$b('Footprint'),' - area of seabed covered by all regional primary and secondary impact zones (PIZs/SIZs), and')
 p('v) ',tags$b('Dredging Site'), '- footprint of potential dredging effect (PIZ and SIZ) for selected site.')
 #br() 
-p("Charts should be viewed together with the relevant associated map layers: Assemblages (All), Assemblages (EEZ), Assemblages (RSMP Region) and Assemblages (Footprint). These layers can be toggled on/off in the map window. Note the faunal identity of individual samples (map layers: 'selected (fauna)' and 'All (fauna)') may sometimes differ to that of the underlying model. This is expected and consistent with the notion that all models are imperfect.")
+p("Plots should be viewed together with the relevant associated map layers: Assemblages (All), Assemblages (EEZ) and Assemblages (RSMP Region). These layers can be toggled on/off in the map window. To visulaise the asseblages present within regional footprints simply toggle on the 'agg (SIZ)' map layer. Note the faunal identity of individual samples (map layers: 'selected (fauna)' and 'All (fauna)') may sometimes differ to that of the underlying model. This is expected and consistent with the notion that all models are imperfect.")
 
 renderPlotly({
 #par(mar=c(1,1,1,1))
@@ -1109,9 +1123,9 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
   #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','Anglian RSMP','North West (457)','Bristol Channel (531)','H Footprint','A Footprint','240','514/1','127','1804/1','1805')),scales="free")+
  facet_wrap(~factor(name,levels=level_order2()),scales="free")+
   theme(legend.position = "none",
-        plot.margin = margin(0, 0, 0,0, "cm"),
-        axis.title=element_text(size=10))+#,face="bold"
-  theme(text=element_text(size=10))+
+        plot.margin = margin(0.4, 0, 0.5,0, "cm"),#margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")
+        axis.title=element_text(size=8))+#,face="bold"
+  theme(text=element_text(size=8))+
   xlab("Assemblage")+
   ylab("Area")+
   scale_y_continuous(labels = label_comma())+
