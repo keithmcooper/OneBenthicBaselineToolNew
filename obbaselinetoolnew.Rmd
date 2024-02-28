@@ -283,16 +283,16 @@ library(leaflet)
 assemblages2 <- rast('www/AssemblageMaxClass_Apr22_agg.tif')
 
 uk_eez <-  st_read(pool, query ="SELECT * from spatial.UK_EEZ;")#
-pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
+pal2 <- c('#0000ee','#00ffff','#05aac1','#9a32cd','#00cd00','#9aff9a','#b40202','#ff0000','#ff8c00','#ffff00','#b4b404')
 r_uk_eez <- crop(assemblages2,uk_eez, mask=TRUE)
 
 library(sf)
 agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_regions;")
-pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
+#pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
 r_agg_region <- crop(assemblages2, agg_region, mask=TRUE)
 
 agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
-pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
+#pal2 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFD199","#FFFF99","#E1E19A")
 r_agg_siz <- crop(assemblages2, agg_siz, mask=TRUE)
 
 ############################
@@ -681,7 +681,7 @@ pool <- dbPool(drv = dbDriver(dw$driver),
 ## Load raster and vector layers
 library(terra)
 #r <- rast("C:/Users/kmc00/OneDrive - CEFAS/R_PROJECTS/OneBenthicBaselineToolNew/R/www/Assemblages.tif")#
-r <- rast("www/AssemblageMaxClass_Apr22_agg.tif")
+r <- rast("www/AssemblageMaxClass_Apr22_agg.tif")#_agg
 #r <- rast('www/AssemblageMaxClass_Apr22.tif')
 #r <- round(r/100)
 names(r) <- 'Assemblages'
