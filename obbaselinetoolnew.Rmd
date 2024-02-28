@@ -768,7 +768,7 @@ agg_siz_hum <- agg_siz_all3%>%filter(region=='Humber RSMP') # subset polygons fo
 agg_siz_hum2 <- agg_siz_hum[,c(1,2,4,5)] # cols of interest: id, region, area_km2, geom
 colnames(agg_siz_hum2)[2] <- 'name'# update col names
 #class(agg_siz_hum2)
-agg_siz_hum_comb <- agg_siz_hum2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_hum_comb <- agg_siz_hum2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_hum_comb)
 agg_siz_hum_comb$name <- 'Humber Footprint'# add in missing cols
 agg_siz_hum_comb$id <- 'Humber Footprint'# add in missing cols
@@ -783,7 +783,7 @@ agg_siz_ang2 <- agg_siz_ang[,c(1,2,4,5)] # cols of interest: id, region, area_km
 colnames(agg_siz_ang2)[2] <- 'name'# update col names
 #class(agg_siz_ang2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_ang_comb <- agg_siz_ang2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_ang_comb <- agg_siz_ang2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_ang_comb)
 agg_siz_ang_comb$name <- 'Anglian Footprint'# add in missing cols
 agg_siz_ang_comb$id <- 'Anglian Footprint'# add in missing cols
@@ -798,7 +798,7 @@ agg_siz_t2 <- agg_siz_t[,c(1,2,4,5)] # cols of interest: id, region, area_km2, g
 colnames(agg_siz_t2)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_t_comb <- agg_siz_t2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_t_comb <- agg_siz_t2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_t_comb$name <- 'Thames Footprint'# add in missing cols
 agg_siz_t_comb$id <- 'Thames Footprint'# add in missing cols
@@ -813,7 +813,7 @@ agg_siz_sc2 <- agg_siz_sc[,c(1,2,4,5)] # cols of interest: id, region, area_km2,
 colnames(agg_siz_sc2)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_sc_comb <- agg_siz_sc2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_sc_comb <- agg_siz_sc2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_sc_comb$name <- 'South Coast Footprint'# add in missing cols
 agg_siz_sc_comb$id <- 'South Coast Footprint'# add in missing cols
@@ -828,7 +828,7 @@ agg_siz_ec2 <- agg_siz_ec[,c(1,2,4,5)] # cols of interest: id, region, area_km2,
 colnames(agg_siz_ec2)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_ec_comb <- agg_siz_ec2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_ec_comb <- agg_siz_ec2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_ec_comb$name <- 'East Channel Footprint'# add in missing cols
 agg_siz_ec_comb$id <- 'East Channel Footprint'# add in missing cols
@@ -843,7 +843,7 @@ agg_siz_nw4572 <- agg_siz_nw457[,c(1,2,4,5)] # cols of interest: id, region, are
 colnames(agg_siz_nw4572)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_nw457_comb <- agg_siz_nw4572 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_nw457_comb <- agg_siz_nw4572 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_nw457_comb$name <- 'North West (457) Footprint'# add in missing cols
 agg_siz_nw457_comb$id <- 'North West (457) Footprint'# add in missing cols
@@ -856,7 +856,7 @@ agg_siz_bc5312 <- agg_siz_bc531[,c(1,2,4,5)] # cols of interest: id, region, are
 colnames(agg_siz_bc5312)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_bc531_comb <- agg_siz_bc5312 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_bc531_comb <- agg_siz_bc5312 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_bc531_comb$name <- 'Bristol Channel (531) Footprint'# add in missing cols
 agg_siz_bc531_comb$id <- 'Bristol Channel (531) Footprint'# add in missing cols
@@ -869,7 +869,7 @@ agg_siz_bc4762 <- agg_siz_bc476[,c(1,2,4,5)] # cols of interest: id, region, are
 colnames(agg_siz_bc4762)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_bc476_comb <- agg_siz_bc4762 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_bc476_comb <- agg_siz_bc4762 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_bc476_comb$name <- 'Bristol Channel (476) Footprint'# add in missing cols
 agg_siz_bc476_comb$id <- 'Bristol Channel (476) Footprint'# add in missing cols
@@ -882,7 +882,7 @@ agg_siz_bc5262 <- agg_siz_bc526[,c(1,2,4,5)] # cols of interest: id, region, are
 colnames(agg_siz_bc5262)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_bc526_comb <- agg_siz_bc5262 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_bc526_comb <- agg_siz_bc5262 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_bc526_comb$name <- 'Bristol Channel (526) Footprint'# add in missing cols
 agg_siz_bc526_comb$id <- 'Bristol Channel (526) Footprint'# add in missing cols
@@ -895,7 +895,7 @@ agg_siz_gws2 <- agg_siz_gws[,c(1,2,4,5)] # cols of interest: id, region, area_km
 colnames(agg_siz_gws2)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_gws_comb <- agg_siz_gws2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_gws_comb <- agg_siz_gws2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_gws_comb$name <- 'Goodwin Sands Footprint'# add in missing cols
 agg_siz_gws_comb$id <- 'Goodwin Sands Footprint'# add in missing cols
@@ -908,7 +908,7 @@ agg_siz_hs2 <- agg_siz_hs[,c(1,2,4,5)] # cols of interest: id, region, area_km2,
 colnames(agg_siz_hs2)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_hs_comb <- agg_siz_hs2 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_hs_comb <- agg_siz_hs2 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_hs_comb$name <- 'Hilbre Swash (Area 392, 393) Footprint'# add in missing cols
 agg_siz_hs_comb$id <- 'Hilbre Swash (Area 392, 393) Footprint'# add in missing cols
@@ -921,7 +921,7 @@ agg_siz_bc4722 <- agg_siz_bc472[,c(1,2,4,5)] # cols of interest: id, region, are
 colnames(agg_siz_bc4722)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_bc472_comb <- agg_siz_bc4722 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_bc472_comb <- agg_siz_bc4722 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_bc472_comb$name <- 'Bristol Channel (472) Footprint'# add in missing cols
 agg_siz_bc472_comb$id <- 'Bristol Channel (472) Footprint'# add in missing cols
@@ -934,7 +934,7 @@ agg_siz_bc4552 <- agg_siz_bc455[,c(1,2,4,5)] # cols of interest: id, region, are
 colnames(agg_siz_bc4552)[2] <- 'name'# update col names
 #class(agg_siz_sc2)
 sf_use_s2(FALSE)#TURN SPHERICAL GEOMETRY OFF TO PREVENT ERROR
-agg_siz_bc455_comb <- agg_siz_bc4552 %>%  summarise() %>%  mutate(region = st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
+agg_siz_bc455_comb <- agg_siz_bc4552 %>%  summarise() %>%  mutate(region = sf::st_area(.))# union all polygons (not an obvious geometry merge tool, but quite effective)
 #plot(agg_siz_sc_comb)
 agg_siz_bc455_comb$name <- 'Bristol Channel (455, 459, Bedwyn) Footprint'# add in missing cols
 agg_siz_bc455_comb$id <- 'Bristol Channel (455, 459, Bedwyn) Footprint'# add in missing cols
