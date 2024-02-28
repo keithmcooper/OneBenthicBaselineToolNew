@@ -12,6 +12,7 @@ resource_files:
 ---
 
 ```{r setup, include = FALSE}
+library(lwgeom)
 library(flexdashboard)
 library(shiny)
 library(jsonlite)
