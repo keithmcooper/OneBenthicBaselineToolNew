@@ -299,8 +299,8 @@ r_agg_region <- mask(assemblages, agg_region)
 
 ## Can't show SIZs footprint as raster has areas of corrupted data
 #agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
-
-#r_agg_siz <- mask(assemblages, agg_siz)
+#agg_siz2 <- agg_siz[!duplicated(agg_siz$geom), ]
+#r_agg_siz <- mask(assemblages, agg_siz2)
 
 ############################
 
@@ -317,7 +317,7 @@ leaflet() %>%
     addPolygons(data=R4_chara,color = "#444444", weight = 1, smoothFactor = 0.5,group = "R4_chara",popup = paste0("<b>Name: </b>", R4_chara$Name))%>%
     addPolygons(data=R4_bid,color = "#444444", weight = 1, smoothFactor = 0.5,group = "R4_bid",popup = paste0("<b>Name: </b>", R4_bid$Name, "<br>","<b>Status: </b>", R4_bid$Bidding_Ar))%>%
     addPolygons(data=agg,color = "#444444", weight = 1, smoothFactor = 0.5,group = "agg (PIZ)",popup = paste0("<b>Name: </b>", agg$area_name, "<br>","<b>Number: </b>", agg$area_numbe))%>%
-    addPolygons(data=siz,color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "agg (SIZ)",popup = paste0("<b>Name: </b>", siz$area_name, "<br>","<b>Number: </b>", siz$area_numbe))%>%
+    addPolygons(data=siz,color = "#444444", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "agg (SIZ)",popup = paste0("<b>Name: </b>", siz$area_name, "<br>","<b>Number: </b>", siz$area_numbe))%>%
     addPolygons(data=ref,color = "#444444", weight = 1, smoothFactor = 0.5,group = "agg (REF)",popup = paste0("<b>Name: </b>", ref$box, "<br>","<b>Status: </b>", ref$sub_region))%>% 
     addPolygons(data=disp,color = "#444444", weight = 1, smoothFactor = 0.5,group = "disp",popup = paste0("<b>Name: </b>", disp$name_, "<br>","<b>Number: </b>", disp$site_))%>%
     addPolygons(data=wave,color = "#444444", weight = 1, smoothFactor = 0.5,group = "wave",popup = paste0("<b>Name: </b>", wave$Name_Prop, "<br>","<b>Status: </b>", wave$Inf_Status))%>%
@@ -334,8 +334,8 @@ leaflet() %>%
     addRasterImage(r_uk_eez,col=pal2,opacity = 1,project = 3857,group = "Assemblages (EEZ)")%>%
     ######################
   addLayersControl(
-    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
-    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"))%>%
+    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",,"Assemblages (Footprint)"
+    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"))%>%#,"Assemblages (Footprint)"
   
   ###############################
 #   addLayersControl(
@@ -371,7 +371,7 @@ observeEvent(  input$siteInput,{
       
 ## Add selected PIZ/SIZ
          addPolygons(data=agg[agg$area_numbe == input$siteInput, ],fillColor = "#444444",stroke = T,opacity = 0.4, weight=1, color="#444444", fillOpacity = 0.2, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", agg[agg$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", agg[agg$area_numbe == input$siteInput, ]$area_numbe))%>%#, color="black"
-         addPolygons(data=siz[siz$area_numbe == input$siteInput, ],color = "orange", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$siteInput, ]$area_numbe))%>%
+         addPolygons(data=siz[siz$area_numbe == input$siteInput, ],color = "#444444", fill = FALSE,weight = 1.5, smoothFactor = 0.5,group = "selected",popup = paste0("<b>Name: </b>", siz[siz$area_numbe == input$siteInput, ]$area_name, "<br>","<b>Number: </b>", siz[siz$area_numbe == input$siteInput, ]$area_numbe))%>%
 
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
