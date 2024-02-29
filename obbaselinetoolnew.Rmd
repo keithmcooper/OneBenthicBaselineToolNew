@@ -298,9 +298,10 @@ agg_region <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extractio
 r_agg_region <- mask(assemblages, agg_region)
 
 ## Can't show SIZs footprint as raster has areas of corrupted data
-#agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
-#agg_siz2 <- agg_siz[!duplicated(agg_siz$geom), ]
-#r_agg_siz <- mask(assemblages, agg_siz2)
+agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
+agg_siz2 <- agg_siz[!duplicated(agg_siz$geom), ]
+pal3 <- c("#9999F8","#99FFFF","#9BDDE6","#D6ADEB","#99EB99","#D6FFD6","#E19999","#FF9999","#FFFF99","#E1E19A")
+r_agg_siz <- mask(assemblages, agg_siz2)
 
 ############################
 
@@ -330,12 +331,12 @@ leaflet() %>%
     addPolygons(data=agg_region,color = "#444444", weight = 1,fillOpacity = 0.01, smoothFactor = 0.5,group = "Assemblages (RSMP Region)")%>%#,popup = paste0("<b>Name: </b>", agg_region$stationsubgroup1)
     addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages (All)")%>%
     addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Assemblages (RSMP Region)")%>%
-     #addRasterImage(r_agg_siz,col=pal2,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
+     addRasterImage(r_agg_siz,col=pal3,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
     addRasterImage(r_uk_eez,col=pal2,opacity = 1,project = 3857,group = "Assemblages (EEZ)")%>%
     ######################
   addLayersControl(
-    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",,"Assemblages (Footprint)"
-    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"))%>%#,"Assemblages (Footprint)"
+    overlayGroups = c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",,"Assemblages (Footprint)"
+    hideGroup(c("All (fauna)","All (phy)","Assemblages","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"))%>%#,"Assemblages (Footprint)"
   
   ###############################
 #   addLayersControl(
@@ -376,8 +377,8 @@ observeEvent(  input$siteInput,{
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 4.5,stroke = T,weight=0.1, fillColor = ~pal_phy(phycluster),fillOpacity=1,group = "Selected (phy)",popup = paste0("<b>Programme: </b>", data$stationgroup,"<br>","<b>Array: </b>", data$stationsubgroup1,"<br>","<b>Station code: </b>", data$stationcode))%>%#
         addCircleMarkers(data=data[data$stationsubgroup1 == input$regionInput, ],~as.numeric(samplelong), ~as.numeric(samplelat), radius = 2.5,stroke = T, weight=0.1,fillColor = ~pal(cluster),fillOpacity=1,group = "Selected (fauna)",popup = paste0("<b>Programme: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationgroup,"<br>","<b>Array: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationsubgroup1,"<br>","<b>Station code: </b>", data[data$stationsubgroup1 == input$regionInput, ]$stationcode))%>% 
     addLayersControl(
-    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"),options = layersControlOptions(collapsed = FALSE))%>%#,"Assemblages (Footprint)"
-    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)"))#,"Assemblages (Footprint)"
+    overlayGroups = c("Selected (fauna)","Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"),options = layersControlOptions(collapsed = FALSE))%>%#,"Assemblages (Footprint)"
+    hideGroup(c("Selected (phy)","All (fauna)","All (phy)","euowf","owf","owf_cab","R4_chara","R4_bid","agg (PIZ)","agg (SIZ)","agg (REF)","disp","wave","tidal","tidal_cab","oga","mcz","sac","ncmpa","Assemblages (All)","Assemblages (EEZ)","Assemblages (RSMP Region)","Assemblages (Footprint)"))#,"Assemblages (Footprint)"
 #######################
 #       addLayersControl(
 #    overlayGroups = c("Region","Footprint"),options = layersControlOptions(collapsed = FALSE))%>%#"wave_cab",
@@ -1109,7 +1110,7 @@ p('iii) ',tags$b('RSMP Region'),' - polygon covering all licences,')
 p('iv) ',tags$b('Footprint'),' - area of seabed covered by all regional primary and secondary impact zones (PIZs/SIZs), and')
 p('v) ',tags$b('Dredging Site'), '- footprint of potential dredging effect (PIZ and SIZ) for selected site.')
 #br() 
-p("Plots should be viewed together with the relevant associated map layers: Assemblages (All), Assemblages (EEZ) and Assemblages (RSMP Region). These layers can be toggled on/off in the map window. To visulaise the asseblages present within regional footprints simply toggle on the 'agg (SIZ)' map layer. Note the faunal identity of individual samples (map layers: 'selected (fauna)' and 'All (fauna)') may sometimes differ to that of the underlying model. This is expected and consistent with the notion that all models are imperfect.")
+p("Plots should be viewed together with the relevant associated map layers: 'Assemblages (All)', 'Assemblages (EEZ)', 'Assemblages (RSMP Region)' and 'Assemblages (Footprint)'. These layers can be toggled on/off in the map window. Note the faunal identity of individual samples (map layers: 'selected (fauna)' and 'All (fauna)') may sometimes differ to that of the underlying model. This is expected and consistent with the notion that all models are imperfect.")
 
 
 renderPlotly({
