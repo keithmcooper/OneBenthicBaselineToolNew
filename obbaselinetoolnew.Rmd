@@ -329,6 +329,7 @@ leaflet() %>%
     addPolygons(data=ncmpa,color = "#444444", weight = 1, smoothFactor = 0.5,group = "ncmpa",popup = paste0("<b>Name: </b>", ncmpa$site_name))%>%
     addPolygons(data=oga,color = "#444444", weight = 1, smoothFactor = 0.5,group = "oga",popup = paste0("<b>Number: </b>", oga$LICREF, "<br>","<b>Organisation: </b>", oga$LICORGGR))%>%
     addPolygons(data=agg_region,color = "#444444", weight = 1,fillOpacity = 0.01, smoothFactor = 0.5,group = "Assemblages (RSMP Region)")%>%#,popup = paste0("<b>Name: </b>", agg_region$stationsubgroup1)
+    addPolygons(data=agg_region,color = "#444444", weight = 1,fillOpacity = 0.01, smoothFactor = 0.5,group = "Assemblages (Footprint)")%>%#,popup = paste0("<b>Name: </b>", agg_region$stationsubgroup1)
     addRasterImage(assemblages,col=assemcol,opacity = 1,project = 3857,group = "Assemblages (All)")%>%
     addRasterImage(r_agg_region,col=pal2,opacity = 1,project = 3857,group = "Assemblages (RSMP Region)")%>%
      addRasterImage(r_agg_siz,col=pal3,opacity = 1,project = 3857,group = "Assemblages (Footprint)")%>%
