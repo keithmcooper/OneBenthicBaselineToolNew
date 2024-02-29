@@ -739,6 +739,7 @@ names(agg_region)[2] <- 'name'## Update col names so all polygon dfs have same n
 
 ## AGGREGATE SIZs
 agg_siz <-  st_read(pool, query ="SELECT * from ap_marine_aggregate.extraction_areas_siz where droped='FALSE';")# Read in data
+agg_siz <- agg_siz[!duplicated(agg_siz$area_numbe), ]
 #plot(agg_siz) # plot polygons
 #names(agg_siz)# Check col names
 agg_siz2 <- agg_siz[,c(1,6,10,19)] # take cols of interest
@@ -974,6 +975,8 @@ example3 <- example2[complete.cases(example2), ]
 ## Add in polygon names
 merge_test <- merge(example3,all_poly_names2, by='ID')
 #View(merge_test)
+merge_test <- merge_test[,1:4]
+#write.csv(merge_test,'C:\\Users\\kmc00\\OneDrive - CEFAS\\working\\526_yaxis.csv')
 ## Proxt search terms
 
 
@@ -1040,9 +1043,13 @@ selected_data2$Assemblages[selected_data2$Assemblages == 9] <- 'D2b'
 selected_data2$Assemblages[selected_data2$Assemblages == 10] <- 'D2c'
 selected_data2$Assemblages[selected_data2$Assemblages == 11] <- 'D2d'
 
+
+
 #################
 return(selected_data2)
+
 })
+
 
 #renderPlot({
 #par(mar=c(1,1,1,1))
@@ -1104,13 +1111,14 @@ p('v) ',tags$b('Dredging Site'), '- footprint of potential dredging effect (PIZ 
 #br() 
 p("Plots should be viewed together with the relevant associated map layers: Assemblages (All), Assemblages (EEZ) and Assemblages (RSMP Region). These layers can be toggled on/off in the map window. To visulaise the asseblages present within regional footprints simply toggle on the 'agg (SIZ)' map layer. Note the faunal identity of individual samples (map layers: 'selected (fauna)' and 'All (fauna)') may sometimes differ to that of the underlying model. This is expected and consistent with the notion that all models are imperfect.")
 
+
 renderPlotly({
 #par(mar=c(1,1,1,1))
   par(mfrow=c(1,1))
 library(scales)
 library(plotly)
 p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(Assemblages))) +
-  geom_bar(position="stack", stat="identity") +#,stat="identity"
+  geom_bar(position="stack", stat="identity",na.rm = TRUE) +#,stat="identity"
   #geom_col(position = "fill") +#,stat="identity"
   #geom_label( x=3.5, aes(y=labelPosition, label=label), size=6) +
   #scale_fill_brewer(palette=4) +
@@ -1122,7 +1130,7 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
   #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','South Coast RSMP','SC Footprint','127')),scales="free")+
   #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','H Footprint','514/1')),scales="free")+
   #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','Anglian RSMP','North West (457)','Bristol Channel (531)','H Footprint','A Footprint','240','514/1','127','1804/1','1805')),scales="free")+
- facet_wrap(~factor(name,levels=level_order2()),scales="free")+
+ facet_wrap(~factor(name,levels=level_order2()),scales="free")+#
   theme(legend.position = "none",
         plot.margin = margin(0.4, 0, 0.5,0, "cm"),#margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")
         axis.title=element_text(size=8))+#,face="bold"
