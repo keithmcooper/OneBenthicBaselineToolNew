@@ -1134,7 +1134,7 @@ p <- ggplot(data=selected_data3(), aes(x=factor(Assemblages), y=n, fill=factor(A
   #facet_wrap(~factor(name,levels=c('NW Europe','UK EEZ','Humber RSMP','Anglian RSMP','North West (457)','Bristol Channel (531)','H Footprint','A Footprint','240','514/1','127','1804/1','1805')),scales="free")+
  facet_wrap(~factor(name,levels=level_order2()),scales="free")+#
   theme(legend.position = "none",
-        plot.margin = margin(0.4, 0, 0.5,0, "cm"),#margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")
+        plot.margin = margin(0.4, 0, 0.5,0.4, "cm"),#margin(t = 0, r = 0, b = 0, l = 0, unit = "pt")
         axis.title=element_text(size=8))+#,face="bold"
   theme(text=element_text(size=8))+
   xlab("Assemblage")+
