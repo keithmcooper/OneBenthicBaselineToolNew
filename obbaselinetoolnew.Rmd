@@ -626,8 +626,8 @@ stations_in_siz <- st_join(st_points, siz, join =st_within)
    st_geometry(stations_in_siz) <- NULL #remove geom colum otherwise it appears in DT
    #stations_in_siz2 <- stations_in_siz[,c(7,1,2,4,5,3,6,16,19)]
    #colnames(stations_in_siz2) <- c("Station","Sample","Year","Longitude","Latitude","Gear","Cluster","Licence","Company")
-   stations_in_siz2 <- stations_in_siz[,c(8,1,2,4,5,3,6,7,17,20)]
-   colnames(stations_in_siz2) <- c("Station","Sample","Year","Longitude","Latitude","Gear","Cluster (fauna)","Cluster (phy)","Licence","Company")
+   stations_in_siz2 <- stations_in_siz[,c(9,8,1,2,4,5,3,6,7,17,20)]
+   colnames(stations_in_siz2) <- c("Survey","Station","Sample","Year","Longitude","Latitude","Gear","Cluster (fauna)","Cluster (phy)","Licence","Company")
    return(stations_in_siz2)
   })
 
